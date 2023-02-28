@@ -2232,6 +2232,18 @@ module.config([ '$routeProvider', function($routeProvider) {
             },
             controller : 'RealmPasswordPolicyCtrl'
         })
+        .when('/realms/:realm/authentication/autootp-policy', {
+            templateUrl : resourceUrl + '/partials/autootp-policy.html',
+            resolve : {
+                realm : function(RealmLoader) {
+                    return RealmLoader();
+                },
+                serverInfo : function(ServerInfoLoader) {
+                    return ServerInfoLoader();
+                }
+            },
+            controller : 'RealmAutoOtpPolicyCtrl'
+        })
         .when('/realms/:realm/authentication/otp-policy', {
             templateUrl : resourceUrl + '/partials/otp-policy.html',
             resolve : {

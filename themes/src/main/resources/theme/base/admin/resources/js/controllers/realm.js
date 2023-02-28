@@ -466,6 +466,12 @@ module.controller('RealmLoginSettingsCtrl', function($scope, Current, Realm, rea
     genericRealmUpdate($scope, Current, Realm, realm, serverInfo, $http, $route, Dialog, Notifications, "/realms/" + realm.realm + "/login-settings", $scope.checkAddAcrLoaMapping, resetCallback);
 });
 
+module.controller('RealmAutoOtpPolicyCtrl', function($scope, Current, Realm, realm, serverInfo, $http, $route, Dialog, Notifications) {
+    $scope.optionsDigits = [ 6, 8 ];
+
+    genericRealmUpdate($scope, Current, Realm, realm, serverInfo, $http, $route, Dialog, Notifications, "/realms/" + realm.realm + "/authentication/autootp-policy");
+});
+
 module.controller('RealmOtpPolicyCtrl', function($scope, Current, Realm, realm, serverInfo, $http, $route, Dialog, Notifications) {
     $scope.optionsDigits = [ 6, 8 ];
 
