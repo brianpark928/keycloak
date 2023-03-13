@@ -558,6 +558,11 @@ public class RealmAdapter implements LegacyRealmModel, JpaModel<RealmEntity> {
     }
 
     @Override
+    public AutoOTPConfig getAutoOTPPolicy() {
+        return new AutoOTPConfig(this);
+    }
+
+    @Override
     public CibaConfig getCibaPolicy() {
         return new CibaConfig(this);
     }

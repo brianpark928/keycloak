@@ -376,6 +376,20 @@ function genericRealmUpdate($scope, Current, Realm, realm, serverInfo, $http, $r
         }
     }, true);
     
+    $scope.autootpsave = function() {
+	var realmCopy = angular.copy($scope.realm);
+        Realm.update({ id : realmCopy.realm}, realmCopy, function () {
+            Notifications.success("Your changes have been saved to the realm.");
+        });
+    };
+
+    $scope.autootpdelete = function() {
+	var realmCopy = angular.copy($scope.realm);
+        Realm.update({ id : realmCopy.realm}, realmCopy, function () {
+            Notifications.success("Your changes have been saved to the realm.");
+        });
+    };
+    
     $scope.save = function() {
         if (saveCallback) {
             saveCallback();

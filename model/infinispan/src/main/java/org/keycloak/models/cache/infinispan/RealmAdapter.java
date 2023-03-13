@@ -655,6 +655,12 @@ public class RealmAdapter implements CachedRealmModel {
     }
 
     @Override
+    public AutoOTPConfig getAutoOTPPolicy() {
+        if (isUpdated()) return updated.getAutoOTPPolicy();
+        return cached.getAutoOTPConfig(modelSupplier);
+    }
+
+    @Override
     public CibaConfig getCibaPolicy() {
         if (isUpdated()) return updated.getCibaPolicy();
         return cached.getCibaConfig(modelSupplier);

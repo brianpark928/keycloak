@@ -994,10 +994,15 @@ public class IdentityBrokerStateTestHelpers {
         }
 
         @Override
-        public CibaConfig getCibaPolicy() {
+        public AutoOTPConfig getAutoOTPPolicy() {
             return null;
         }
 
+        @Override
+        public CibaConfig getCibaPolicy() {
+            return null;
+        }
+        
         @Override
         public ParConfig getParPolicy() {
             return null;

@@ -62,6 +62,9 @@
     <script src="${resourceUrl}/js/authz/authz-controller.js" type="text/javascript"></script>
     <script src="${resourceUrl}/js/authz/authz-services.js" type="text/javascript"></script>
 
+    <!-- AutoOTP Policy -->
+    <script src="${resourceUrl}/js/autootp/autootp.js" type="text/javascript"></script>
+
     <#if properties.scripts?has_content>
         <#list properties.scripts?split(' ') as script>
             <script type="text/javascript" src="${resourceUrl}/${script}"></script>

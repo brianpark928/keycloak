@@ -243,6 +243,8 @@ public interface RealmModel extends RoleContainerModel {
 
     OAuth2DeviceConfig getOAuth2DeviceConfig();
 
+    AutoOTPConfig getAutoOTPPolicy();
+    
     CibaConfig getCibaPolicy();
 
     ParConfig getParPolicy();
