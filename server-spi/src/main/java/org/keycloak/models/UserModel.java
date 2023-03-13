@@ -265,7 +265,6 @@ public interface UserModel extends RoleMapperModel {
     enum RequiredAction {
         VERIFY_EMAIL,
         UPDATE_PROFILE,
-        CONFIGURE_AUTOOTP,
         CONFIGURE_TOTP,
         CONFIGURE_RECOVERY_AUTHN_CODES,
         UPDATE_PASSWORD,

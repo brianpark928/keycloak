@@ -72,7 +72,6 @@ public class DefaultRequiredActions {
     public enum Action {
         VERIFY_EMAIL(UserModel.RequiredAction.VERIFY_EMAIL.name(), DefaultRequiredActions::addVerifyEmailAction),
         UPDATE_PROFILE(UserModel.RequiredAction.UPDATE_PROFILE.name(), DefaultRequiredActions::addUpdateProfileAction),
-        CONFIGURE_AUTOOTP(UserModel.RequiredAction.CONFIGURE_AUTOOTP.name(), DefaultRequiredActions::addConfigureAutootpAction),
         CONFIGURE_TOTP(UserModel.RequiredAction.CONFIGURE_TOTP.name(), DefaultRequiredActions::addConfigureTotpAction),
         UPDATE_PASSWORD(UserModel.RequiredAction.UPDATE_PASSWORD.name(), DefaultRequiredActions::addUpdatePasswordAction),
         TERMS_AND_CONDITIONS(UserModel.RequiredAction.TERMS_AND_CONDITIONS.name(), DefaultRequiredActions::addTermsAndConditionsAction),
@@ -140,19 +139,6 @@ public class DefaultRequiredActions {
             updateProfile.setDefaultAction(false);
             updateProfile.setPriority(40);
             realm.addRequiredActionProvider(updateProfile);
-        }
-    }
-
-    public static void addConfigureAutootpAction(RealmModel realm) {
-        if (realm.getRequiredActionProviderByAlias(UserModel.RequiredAction.CONFIGURE_AUTOOTP.name()) == null) {
-            RequiredActionProviderModel autootp = new RequiredActionProviderModel();
-            autootp.setEnabled(true);
-            autootp.setAlias(UserModel.RequiredAction.CONFIGURE_AUTOOTP.name());
-            autootp.setName("Configure AutoOTP");
-            autootp.setProviderId(UserModel.RequiredAction.CONFIGURE_AUTOOTP.name());
-            autootp.setDefaultAction(false);
-            autootp.setPriority(10);
-            realm.addRequiredActionProvider(autootp);
         }
     }
 
