@@ -1,7 +1,7 @@
 
 module.controller('AutoOTPCtrl', function($scope, $http)
 {
-	if($scope.realm.attributes.autootpAppSettingStep.length > 0) { 
+	if($scope.realm.attributes.autootpAppSettingStep != undefined && $scope.realm.attributes.autootpAppSettingStep.length > 0) { 
 		$scope.autootpAppSettingStepDisable = true;
 		$scope.autootpAppSettingNameDisable = true;
 		$scope.autootpAppSettingDomainDisable = true;
@@ -23,7 +23,7 @@ module.controller('AutoOTPCtrl', function($scope, $http)
 
     $scope.autootpAppSettingSaveDisable = true;
 
-	if($scope.realm.attributes.autootpReturnDomainValidationToken.length > 0) { 
+	if($scope.realm.attributes.autootpReturnDomainValidationToken != undefined && $scope.realm.attributes.autootpReturnDomainValidationToken.length > 0) { 
     	$scope.autootpDevcenterReloadDisable = false;
 	} else { 
 		$scope.autootpDevcenterReloadDisable = true;
