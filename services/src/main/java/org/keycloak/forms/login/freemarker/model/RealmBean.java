@@ -36,6 +36,46 @@ public class RealmBean {
         realm = realmModel;
     }
 
+    public String getAttributeautootpAppSettingDomain() {
+        return realm.getAttribute("autootpAppSettingDomain");
+    }
+
+    public String getAttributeautootpAppSettingEmail() {
+        return realm.getAttribute("autootpAppSettingEmail");
+    }
+    
+    public String getAttributeautootpAppSettingIpAddress() {
+        return realm.getAttribute("autootpAppSettingIpAddress");
+    }
+    
+    public String getAttributeautootpAppSettingName() {
+        return realm.getAttribute("autootpAppSettingName");
+    }
+    
+    public String getAttributeautootpAppSettingProxyServerDomain() {
+        return realm.getAttribute("autootpAppSettingProxyServerDomain");
+    }
+    
+    public String getAttributeautootpAppSettingStep() {
+        return realm.getAttribute("autootpAppSettingStep");
+    }
+    
+    public String getAttributeautootpReturnDomainValidationToken() {
+        return realm.getAttribute("autootpReturnDomainValidationToken");
+    }
+    
+    public String getAttributeautootpReturnServerProgress() {
+        return realm.getAttribute("autootpReturnServerProgress");
+    }
+    
+    public String getAttributeautootpServerSettingAppServerKey() {
+        return realm.getAttribute("autootpServerSettingAppServerKey");
+    }
+    
+    public String getAttributeautootpServerSettingAuthServerDomain() {
+        return realm.getAttribute("autootpServerSettingAuthServerDomain");
+    }
+    
     public String getName() {
         return realm.getName();
     }

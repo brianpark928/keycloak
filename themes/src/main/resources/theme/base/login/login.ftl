@@ -5,6 +5,17 @@
     <#elseif section = "form">
     <div id="kc-form">
       <div id="kc-form-wrapper">
+        [${realm.displayName}]
+        <br>[${realm.attributeautootpAppSettingDomain!"attributeautootpAppSettingDomain empty!"}]
+        <br>[${realm.attributeautootpAppSettingEmail!"attributeautootpAppSettingEmail empty!"}]
+        <br>[${realm.attributeautootpAppSettingIpAddress!"attributeautootpAppSettingIpAddress empty!"}]
+        <br>[${realm.attributeautootpAppSettingName!"attributeautootpAppSettingName empty!"}]
+        <br>[${realm.attributeautootpAppSettingProxyServerDomain!"attributeautootpAppSettingProxyServerDomain empty!"}]
+        <br>[${realm.attributeautootpAppSettingStep!"attributeautootpAppSettingStep empty!"}]
+        <br>[${realm.attributeautootpReturnDomainValidationToken!"attributeautootpReturnDomainValidationToken empty!"}]
+        <br>[${realm.attributeautootpReturnServerProgress!"attributeautootpReturnServerProgress empty!"}]
+        <br>[${realm.attributeautootpServerSettingAppServerKey!"attributeautootpServerSettingAppServerKey empty!"}]
+        <br>[${realm.attributeautootpServerSettingAuthServerDomain!"attributeautootpServerSettingAuthServerDomain empty!"}]
         <#if realm.password>
             <form id="kc-form-login" onsubmit="login.disabled = true; return true;" action="${url.loginAction}" method="post">
                 <#if !usernameHidden??>
