@@ -16,6 +16,7 @@
 #
 
 org.keycloak.authentication.authenticators.secretquestion.SecretQuestionAuthenticatorFactory
+org.keycloak.authentication.authenticators.autootp.AutoOTPAuthenticatorFactory
 
 org.keycloak.authentication.authenticators.browser.CookieAuthenticatorFactory
 org.keycloak.authentication.authenticators.browser.UsernamePasswordFormFactory

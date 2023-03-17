@@ -883,6 +883,9 @@ public class AuthenticationProcessor {
     }
 
     public Response authenticate() throws AuthenticationFlowException {
+    	
+    	System.out.println("############################### AuthenticationProcessor :: authenticate");
+    	
         logger.debug("AUTHENTICATE");
         Response challenge = authenticateOnly();
         if (challenge != null) return challenge;
@@ -890,6 +893,9 @@ public class AuthenticationProcessor {
     }
 
     public Response authenticateClient() throws AuthenticationFlowException {
+    	
+    	System.out.println("############################### AuthenticationProcessor :: authenticateClient - this.flowId [" + this.flowId + "]");
+    	
         logger.debug("AUTHENTICATE CLIENT");
         AuthenticationFlow authenticationFlow = createFlowExecution(this.flowId, null);
         try {
@@ -957,6 +963,9 @@ public class AuthenticationProcessor {
 
 
     public Response authenticationAction(String execution) {
+    	
+    	System.out.println("############################### AuthenticationProcessor :: authenticationAction");
+    	
         logger.debug("authenticationAction");
         checkClientSession(true);
         String current = authenticationSession.getAuthNote(CURRENT_AUTHENTICATION_EXECUTION);
@@ -1010,6 +1019,9 @@ public class AuthenticationProcessor {
     }
 
     public Response authenticateOnly() throws AuthenticationFlowException {
+    	
+    	System.out.println("############################### AuthenticationProcessor :: authenticateOnly");
+    	
         logger.debug("AUTHENTICATE ONLY");
         checkClientSession(false);
         event.client(authenticationSession.getClient().getClientId())

@@ -16,6 +16,7 @@
 #
 
 org.keycloak.authentication.authenticators.secretquestion.SecretQuestionRequiredActionFactory
+org.keycloak.authentication.authenticators.autootp.AutoOTPRequiredActionFactory
 
 org.keycloak.authentication.requiredactions.UpdatePassword
 org.keycloak.authentication.requiredactions.UpdateProfile

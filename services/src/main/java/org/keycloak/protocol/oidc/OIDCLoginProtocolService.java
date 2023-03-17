@@ -38,6 +38,7 @@ import org.keycloak.protocol.oidc.endpoints.LoginStatusIframeEndpoint;
 import org.keycloak.protocol.oidc.endpoints.LogoutEndpoint;
 import org.keycloak.protocol.oidc.endpoints.ThirdPartyCookiesIframeEndpoint;
 import org.keycloak.protocol.oidc.endpoints.TokenEndpoint;
+import org.keycloak.protocol.oidc.endpoints.AutoOTPEndpoint;
 import org.keycloak.protocol.oidc.endpoints.TokenRevocationEndpoint;
 import org.keycloak.protocol.oidc.endpoints.UserInfoEndpoint;
 import org.keycloak.protocol.oidc.ext.OIDCExtProvider;
@@ -118,6 +119,9 @@ public class OIDCLoginProtocolService {
     }
 
     public static UriBuilder tokenUrl(UriBuilder baseUriBuilder) {
+    	
+    	System.out.println("############################### OIDCLoginProtocolService :: tokenUrl");
+    	
         UriBuilder uriBuilder = tokenServiceBaseUrl(baseUriBuilder);
         return uriBuilder.path(OIDCLoginProtocolService.class, "token");
     }
@@ -182,9 +186,20 @@ public class OIDCLoginProtocolService {
      */
     @Path("token")
     public Object token() {
+    	
+    	System.out.println("############################### OIDCLoginProtocolService :: token");
+    	
         return new TokenEndpoint(session, tokenManager, event);
     }
-
+    
+    @Path("autootp")
+    public Object autootp() {
+    	
+    	System.out.println("############################### OIDCLoginProtocolService :: autootp");
+    	
+        return new AutoOTPEndpoint(session, event);
+    }
+    
     @Path("login-status-iframe.html")
     public Object getLoginStatusIframe() {
         return new LoginStatusIframeEndpoint(session);
