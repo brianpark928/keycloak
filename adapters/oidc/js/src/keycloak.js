@@ -810,6 +810,9 @@ function Keycloak (config) {
         function setupOidcEndoints(oidcConfiguration) {
             if (! oidcConfiguration) {
                 kc.endpoints = {
+                    autootp: function() {
+                        return getRealmUrl() + '/protocol/openid-connect/autootp';
+                    },
                     authorize: function() {
                         return getRealmUrl() + '/protocol/openid-connect/auth';
                     },

@@ -78,6 +78,9 @@ public class DefaultAuthenticationFlow implements AuthenticationFlow {
 
     @Override
     public Response processAction(String actionExecution) {
+    	
+    	System.out.println("############################### DefaultAuthenticationFlow :: processAction");
+    	
         logger.debugv("processAction: {0}", actionExecution);
 
         if (actionExecution == null || actionExecution.isEmpty()) {
@@ -169,6 +172,9 @@ public class DefaultAuthenticationFlow implements AuthenticationFlow {
      * @return Response if some more forms should be displayed during authentication. Null otherwise.
      */
     private Response continueAuthenticationAfterSuccessfulAction(AuthenticationExecutionModel actionExecutionModel) {
+    	
+    	System.out.println("############################### DefaultAuthenticationFlow :: continueAuthenticationAfterSuccessfulAction");
+    	
         processor.getAuthenticationSession().removeAuthNote(AuthenticationProcessor.CURRENT_AUTHENTICATION_EXECUTION);
 
         String firstUnfinishedParentFlowId = checkAndValidateParentFlow(actionExecutionModel);
@@ -227,6 +233,9 @@ public class DefaultAuthenticationFlow implements AuthenticationFlow {
 
     @Override
     public Response processFlow() {
+    	
+    	System.out.println("############################### DefaultAuthenticationFlow :: processFlow");
+    	
         logger.debugf("processFlow: %s", flow.getAlias());
 
         //separate flow elements into required and alternative elements
@@ -368,6 +377,9 @@ public class DefaultAuthenticationFlow implements AuthenticationFlow {
 
 
     private Response processSingleFlowExecutionModel(AuthenticationExecutionModel model, boolean calledFromFlow) {
+    	
+    	System.out.println("############################### DefaultAuthenticationFlow :: processSingleFlowExecutionModel");
+    	
         logger.debugf("check execution: '%s', requirement: '%s'", logExecutionAlias(model), model.getRequirement());
 
         if (isProcessed(model)) {
@@ -566,6 +578,9 @@ public class DefaultAuthenticationFlow implements AuthenticationFlow {
     // This is triggered when current flow is successful due the fact that it's executions passed.
     // It is opportunity to do some last "generic" checks before considering whole authentication as successful
     private Response onFlowExecutionsSuccessful() {
+    	
+    	System.out.println("############################### DefaultAuthenticationFlow :: onFlowExecutionsSuccessful");
+    	
         if (flow.isTopLevel()) {
             logger.debugf("Authentication successful of the top flow '%s'", flow.getAlias());
             executeTopFlowSuccessCallbacks();

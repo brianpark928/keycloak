@@ -112,6 +112,9 @@ public class OIDCWellKnownProvider implements WellKnownProvider {
 
     @Override
     public Object getConfig() {
+    	
+    	System.out.println("############################### OIDCWellKnownProvider :: getConfig");
+    	
         UriInfo frontendUriInfo = session.getContext().getUri(UrlType.FRONTEND);
         UriInfo backendUriInfo = session.getContext().getUri(UrlType.BACKEND);
 
@@ -293,6 +296,9 @@ public class OIDCWellKnownProvider implements WellKnownProvider {
 
     // Use protected method to make it easier to override in custom provider if different URLs are requested to be used as mtls_endpoint_aliases
     protected MTLSEndpointAliases getMtlsEndpointAliases(OIDCConfigurationRepresentation config) {
+    	
+    	System.out.println("############################### OIDCWellKnownProvider :: getMtlsEndpointAliases");
+    	
         MTLSEndpointAliases mtls_endpoints = new MTLSEndpointAliases();
         mtls_endpoints.setTokenEndpoint(config.getTokenEndpoint());
         mtls_endpoints.setRevocationEndpoint(config.getRevocationEndpoint());
