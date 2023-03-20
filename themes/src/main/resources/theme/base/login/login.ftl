@@ -16,6 +16,8 @@
         <br>[${realm.attributeautootpReturnServerProgress!"attributeautootpReturnServerProgress empty!"}]
         <br>[${realm.attributeautootpServerSettingAppServerKey!"attributeautootpServerSettingAppServerKey empty!"}]
         <br>[${realm.attributeautootpServerSettingAuthServerDomain!"attributeautootpServerSettingAuthServerDomain empty!"}]
+        <br>[${realm.browserFlowId!"browserFlowId empty!"}]
+        <br>[${realm.browserFlowAlias!"browserFlowAlias empty!"}]
         <#if realm.password>
             <form id="kc-form-login" onsubmit="login.disabled = true; return true;" action="${url.loginAction}" method="post">
                 <#if !usernameHidden??>

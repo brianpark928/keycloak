@@ -25,6 +25,8 @@ import org.keycloak.representations.idm.CredentialRepresentation;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import org.keycloak.models.AuthenticationFlowModel;
+
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
@@ -76,6 +78,24 @@ public class RealmBean {
         return realm.getAttribute("autootpServerSettingAuthServerDomain");
     }
     
+    public String getAttributeautootpAppSettingPublickey() {
+        return realm.getAttribute("autootpAppSettingPublickey");
+    }
+    
+    public String getAttributeautootpAppSettingPrivatekey() {
+        return realm.getAttribute("autootpAppSettingPrivatekey");
+    }
+
+    public String getBrowserFlowId() {
+    	AuthenticationFlowModel flowModel = realm.getBrowserFlow();
+    	return flowModel.getId();
+    }
+
+    public String getBrowserFlowAlias() {
+    	AuthenticationFlowModel flowModel = realm.getBrowserFlow();
+    	return flowModel.getAlias();
+    }
+
     public String getName() {
         return realm.getName();
     }
