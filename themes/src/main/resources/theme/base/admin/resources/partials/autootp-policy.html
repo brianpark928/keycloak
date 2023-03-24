@@ -12,22 +12,12 @@
 		<span class="text ng-binding">{{:: 'application-setting' | translate}}</span>
 	</legend>
 		
-<!--		
-		<form id="list-form-popup" name="list-form-popup" onsubmit="false;">
-			<input type="hidden" id="req_dpNo" name="req_dpNo" value="119042">
-			<input type="hidden" id="st_date_popup" name="st_date_popup" value="2022-10-01">
-			<input type="hidden" id="end_date_popup" name="end_date_popup" value="2023-02-01">
-			<input type="hidden" id="sortType_popup" name="sortType_popup" value="0">
-			<input type="hidden" id="sortType_info_popup" name="sortType_info_popup" value="DESC">
-
-		</form>
--->
     <form class="form-horizontal" name="realmForm" novalidate kc-read-only="!access.manageRealm">
         <div class="form-group">
             <label for="step" class="col-md-2 control-label">{{:: 'autootp-step' | translate}}</label>
             <div class="col-md-2">
                 <div>
-                    <select required id="autootpAppSettingStep"  data-ng-disabled="autootpAppSettingStepDisable" ng-change="autootpAppSettingSaveDisable = false" ng-model="realm.attributes.autootpAppSettingStep" class="form-control" >
+                    <select required id="autootpAppSettingStep"  kc-autootp-step-save data-ng-disabled="autootpAppSettingStepDisable" ng-change="" ng-model="realm.attributes.autootpAppSettingStep" class="form-control" >
                         <option value="1step">{{:: '1-step-authentication' | translate}}</option>
                         <option value="2step">{{:: '2-step-authentication' | translate}}</option>
                     </select>
@@ -96,6 +86,7 @@
             <label class="col-md-2 control-label" for="appName">{{:: 'autootp-serverprocess' | translate}}</label>
             <div class="col-sm-6">
                 <input readonly="" type="text" id="autootpReturnServerProgress"  data-ng-disabled="autootpReturnServerProgressDisable" ng-model="realm.attributes.autootpReturnServerProgress" class="form-control" >
+                <input class="form-control" type="hidden" id="autootpReturnServerProgressStatus"  ng-model="realm.attributes.autootpReturnServerProgressStatus"  >
             </div>
             <kc-tooltip>{{:: 'autootp-serverprocess-tooltip' | translate}}</kc-tooltip>
         </div>
@@ -104,6 +95,8 @@
             <div class="col-md-10 col-md-offset-2">
             
                 <button id="autootpDevcenterReload" kc-devcenter-reload data-ng-disabled="autootpDevcenterReloadDisable" >{{:: 'autootp-serverprocess-reload' | translate}}</button>
+                <button id="autootpDevcenterRemail" kc-devcenter-remail data-ng-disabled="autootpDevcenterRemailDisable" >{{:: 'autootp-serverprocess-remail' | translate}}</button>
+                <button id="autootpDevcenterRemailSetting" kc-devcenter-remail-setting data-ng-disabled="autootpDevcenterRemailSettingDisable" >{{:: 'autootp-serverprocess-remail-setting' | translate}}</button>
             </div>
         </div>
         
@@ -114,7 +107,7 @@
         <div class="form-group">
             <label class="col-md-2 control-label" for="appName">{{:: 'autootp-appserverkey' | translate}}</label>
             <div class="col-sm-6">
-                <input class="form-control" type="text" id="autootpServerSettingAppServerKey"  data-ng-disabled="autootpServerSettingAppServerKeyDisable" ng-change="autootpServerSettingSaveDisable = false" ng-model="realm.attributes.autootpServerSettingAppServerKey" >
+                <input class="form-control" type="text" id="autootpServerSettingAppServerKey"  data-ng-disabled="autootpServerSettingAppServerKeyDisable" ng-change="autootpServerSettingSaveDisable = false;autootpServerSettingClearDisable = false;" ng-model="realm.attributes.autootpServerSettingAppServerKey" >
             </div>
             <kc-tooltip>{{:: 'autootp-appserverkey-tooltip' | translate}}</kc-tooltip>
         </div>
@@ -122,7 +115,8 @@
         <div class="form-group">
             <label class="col-md-2 control-label" for="appName">{{:: 'autootp-authserverdomain' | translate}}</label>
             <div class="col-sm-6">
-                <input class="form-control" type="text" id="autootpServerSettingAuthServerDomain" data-ng-disabled="autootpServerSettingAuthServerDomainDisable" ng-change="autootpServerSettingSaveDisable = false" ng-model="realm.attributes.autootpServerSettingAuthServerDomain" >
+                <input class="form-control" type="text" id="autootpServerSettingAuthServerDomain" data-ng-disabled="autootpServerSettingAuthServerDomainDisable" ng-change="autootpServerSettingSaveDisable = false;autootpServerSettingClearDisable = false;" ng-model="realm.attributes.autootpServerSettingAuthServerDomain" >
+                <input class="form-control" type="hidden" id="autootpAppSettingappID" ng-model="realm.attributes.autootpAppSettingappID">
             </div>
             <kc-tooltip>{{:: 'autootp-authserverdomain-tooltip' | translate}}</kc-tooltip>
         </div>

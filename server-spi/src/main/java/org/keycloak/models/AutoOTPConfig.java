@@ -42,6 +42,8 @@ public class AutoOTPConfig extends AbstractConfig {
     public static final String AUTOOTP_SERVER_SETTING_APPLICATION_SERVER_KEY = "autootpServerSettingAppServerKey";
     public static final String AUTOOTP_SERVER_SETTING_AUTHENTICATION_SERVER_DOMAIN = "autootpServerSettingAuthServerDomain";
     
+    public static final String AUTOOTP_APPLICATION_SETTING_PUBLICKEY = "autootpAppSettingPublickey";
+    public static final String AUTOOTP_APPLICATION_SETTING_PRIVATEKEY = "autootpAppSettingPrivatekey";
     
     // default value
     public static final String DEFAULT_AUTOOTP_APPLICATION_SETTING_STEP = AUTOOTP_1_STEP;

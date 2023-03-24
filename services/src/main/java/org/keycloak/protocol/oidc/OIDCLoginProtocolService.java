@@ -47,6 +47,8 @@ import org.keycloak.services.resources.Cors;
 import org.keycloak.services.resources.RealmsResource;
 import org.keycloak.services.util.CacheControlUtil;
 
+import org.keycloak.protocol.oidc.endpoints.AutootpPolicyEndpoint;
+
 import java.util.Objects;
 
 import javax.ws.rs.GET;
@@ -200,6 +202,14 @@ public class OIDCLoginProtocolService {
         return new AutoOTPEndpoint(session, event);
     }
     
+    @Path("autootp-policy-api")
+    public Object autootpPolicyApi() {
+    	
+    	System.out.println("############################### OIDCLoginProtocolService :: autootp-policy-api");
+    	
+        return new AutootpPolicyEndpoint(session, event);
+    }
+
     @Path("login-status-iframe.html")
     public Object getLoginStatusIframe() {
         return new LoginStatusIframeEndpoint(session);
