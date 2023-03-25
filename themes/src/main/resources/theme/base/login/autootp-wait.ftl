@@ -6,12 +6,20 @@
         ${msg("loginTitleHtml",realm.name)}
     <#elseif section = "form">
 		<div id="kc-form">
-			<div id="kc-form-wrapper">
+			<div id="kc-form-wrapper" style="display:none;">
+			
+				<input type="hidden" id="page_set" name="page_set" value="autootp">
+				<input type="hidden" id="page_config" name="page_config" value="">
+				<input type="hidden" id="browser_flow_id" name="browser_flow_id" value="${realm.browserFlowAlias!''}">
+				<input type="hidden" id="login_realm" name="login_realm" value="${realm.name!''}">
+
+        		<input type="hidden" id="login_step" name="login_step" value="${realm.attributeautootpAppSettingStep!''}">
+				<input type="hidden" id="login_flow" name="login_flow" value="">
+				<input type="hidden" id="submit_url" value="${url.loginAction}">
+				
 				<form id="frm" name="frm">
 					<input type="hidden" id="hidden_username" name="hidden_username" value="${(username!'')}">
 				</form>
-				<input type="hidden" id="submit_url" value="${url.loginAction}">
-				<input type="hidden" id="db_realm" value="${realm.name}">
 
 				<div id="autoOtpLogin">
 					<div class="${properties.kcFormGroupClass!}">
@@ -38,13 +46,8 @@
 					</div>
 					<br>
 					<div style="width:100%;text-align:right;">
-						<a href="#" onclick="loginAutoOTPwithdrawal();" style="display:inline-block;">Unregistrate AutoOTP</a>
+						<a href="#" onclick="loginAutoOTPwithdrawal('T');" style="display:inline-block;">Unregistrate AutoOTP</a>
 					</div>
-					<!--
-					<div id="kc-form-buttons" class="${properties.kcFormGroupClass!}">				
-						<input tabindex="4" class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" name="login" id="kc-login" value="Unregistrate AutoOTP" onclick="loginAutoOTPwithdrawal()"/>
-					</div>
-					-->
 				</div>
 				
 				<div id="reg_qr" style="text-align:center; display:none;">
@@ -72,6 +75,25 @@
 					</div>
 				</div>
 
+				<div id="config" style="text-align:center; display:none;">
+					<span style="display:inline-block; width:100%;font-size:16px;">
+						Your AutoOTP account will be unregistrated.
+					</span>
+					<br>
+					<div id="kc-form-buttons" class="${properties.kcFormGroupClass!}">				
+						<input tabindex="4" class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" name="login" id="unreg_autootp" value="Unregistrate AutoOTP" onclick="loginAutoOTPwithdrawal('F')"/>
+					</div>
+					<br>
+					<div style="width:100%;text-align:right;">
+						<a href="#" onclick="cancelWidthdrawAutoOTP();" style="display:inline-block;">Back to login</a>
+					</div>
+				</div>
+
+			</div>
+			<div id="loading" style="text-align:center; display:none;">
+				<span style="display:inline-block; width:100%;font-size:16px;">
+					Wait for loading...
+				</span>
 			</div>
 		</div>
 	    <script type="text/javascript" src="${url.resourcesCommonPath}/node_modules/jquery/dist/jquery.min.js"></script>
@@ -79,7 +101,6 @@
 	    <script type="text/javascript">
 		    $(document).ready(function() {
 		    	AutoOtpLoginRestAPI();
-		    	//admin_token = getToken();
 		    });
 	    </script>
 	</#if>

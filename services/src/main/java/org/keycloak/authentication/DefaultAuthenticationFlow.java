@@ -78,9 +78,6 @@ public class DefaultAuthenticationFlow implements AuthenticationFlow {
 
     @Override
     public Response processAction(String actionExecution) {
-    	
-    	System.out.println("############################### DefaultAuthenticationFlow :: processAction");
-    	
         logger.debugv("processAction: {0}", actionExecution);
 
         if (actionExecution == null || actionExecution.isEmpty()) {
@@ -172,9 +169,6 @@ public class DefaultAuthenticationFlow implements AuthenticationFlow {
      * @return Response if some more forms should be displayed during authentication. Null otherwise.
      */
     private Response continueAuthenticationAfterSuccessfulAction(AuthenticationExecutionModel actionExecutionModel) {
-    	
-    	System.out.println("############################### DefaultAuthenticationFlow :: continueAuthenticationAfterSuccessfulAction");
-    	
         processor.getAuthenticationSession().removeAuthNote(AuthenticationProcessor.CURRENT_AUTHENTICATION_EXECUTION);
 
         String firstUnfinishedParentFlowId = checkAndValidateParentFlow(actionExecutionModel);
@@ -233,8 +227,6 @@ public class DefaultAuthenticationFlow implements AuthenticationFlow {
 
     @Override
     public Response processFlow() {
-    	
-    	System.out.println("############################### DefaultAuthenticationFlow :: processFlow");
     	
         logger.debugf("processFlow: %s", flow.getAlias());
 

@@ -1,9 +1,23 @@
-// 자동로그인 최대 대기 시간(초)
+// AutoOTP accept wait time (seconds)
 MaxTime = 60
 
-// --------------------------- AutoOTP --------------------------------
+var page_set = $("#page_set").val();
+if(page_set === undefined || page_set == null)
+	page_set = "";
+
+var login_step = $("#login_step").val();
+var browser_flow_id = $("#browser_flow_id").val();
+
+if(login_step === undefined || login_step == null)				login_step = "";
+if(browser_flow_id === undefined || browser_flow_id == null)	browser_flow_id = "";
+
+if(browser_flow_id.toUpperCase().indexOf("AUTOOTP") > -1)
+	$("#login_flow").val("AUTOOTP");
+
+var login_flow = $("#login_flow").val();
+if(login_flow === undefined || login_flow == null)				login_flow = "";
+
 var autootp_millisec = 0;
-var autoOtpState = "OFF";
 var autootp_term = 0;
 var servicePassword = "";
 var pushConnectorUrl = "";
@@ -13,51 +27,174 @@ var sessionId = "";
 var timeoutId1 = null;
 var timeoutId2 = null;
 
-// --------------------------- Keycloak --------------------------------
-var admin_token = "";
-
 function loginOk() {
-	var form = $("#frm");
-	form.attr("method", "POST");
-	form.attr("action", $("#submit_url").val());
-	form.submit();
-	form.empty();
+	
+	var username = $("#hidden_username").val();		// autootp-wait.ftl
+	if(username === undefined || username == null)	username = "";
+	
+	var submit_url = $("#submit_url").val();
+	if(submit_url === undefined || submit_url == null)
+		submit_url = "";
+	
+	// 1-factor
+	if(login_flow == "AUTOOTP" && login_step == "1step") {
+		if(page_set == "autootp") {
+			var form = $("#frm");
+			form.attr("method", "POST");
+			form.attr("action", submit_url);
+			form.submit();
+			form.empty();
+		}
+		else {
+			var form = $("#kc-form-login");
+			form.submit();
+			form.empty();
+		}
+	}
+	// 2-factor
+	else if(page_set == "autootp" && login_flow == "AUTOOTP" && login_step == "2step" && username != "") {
+		var form = $("#frm");
+		form.attr("method", "POST");
+		form.attr("action", submit_url);
+		form.submit();
+		form.empty();
+	}
 }
 
 function AutoOtpLoginRestAPI() {
-	/*
-	 * 1. AutoOTP 등록여부 확인
-	 * 2. 일회용토큰 요청
-	 * 3. 일외용토큰으로 서비스 패스워드 요청
-	 * 3. 인증요청
-	 * 4. 1초 주기로 인증결과 요청
-	 */
-	 
-	var isReg = checkAutoOTPReg();
-	console.log("isReg = " + isReg);
+
+	// Preset for AutoOTP Login & Configuration
 	
-	if(isReg == "T") {
-		var token = getTokenForOneTime();
-		
-		if(token != "")
-			loginAutoOTPStart(token);
+	var login_username = $("#username").val();		// login.ftl
+	var username = $("#hidden_username").val();		// autootp-wait.ftl
+	
+	if(login_username === undefined || login_username == null)	login_username = "";
+	if(username === undefined || username == null)				username = "";
+
+	var autootp_conf = window.localStorage.getItem('conf_autootp');
+	if(autootp_conf === undefined || autootp_conf == null)
+		autootp_conf = "";
+	window.localStorage.removeItem('conf_autootp');
+
+	console.log("page_set [" + page_set + "] login_flow [" + login_flow + "] login_step [" + login_step + "] username [" + username + "] login_username [" + login_username + "]" + ", autootp_conf [" + autootp_conf + "]");
+	
+	// 1-factor AutoOTP 인증화면
+	if(login_flow == "AUTOOTP" && login_step == "1step") {
+		if(username != "") {
+			if(autootp_conf == "proc") {
+				$("#kc-form-wrapper").css("display", "block");
+				var isReg = checkAutoOTPReg();
+				if(isReg == "T") {
+					widthdrawAutoOTP();
+					//loginAutoOTPwithdrawal("F")
+				}
+				else {
+					regAutoOTP();
+				}
+			}
+			else {
+				$("#loading").css("display", "block");
+				loginOk();
+			}
+		}
+		else {
+			$("#login_password").css("display", "none");
+			$("#login_autootp").css("display", "block");
+			$("#move_home_btn").css("display", "block");
+		}
+	}
+	// 2-factor AutoOTP 인증화면
+	else if(login_flow == "AUTOOTP" && login_step == "2step") {
+		if(username == "") {
+			$("#login_autootp").css("display", "none");
+			$("#move_home_btn").css("display", "block");
+		}
+		else {
+			$("#kc-form-wrapper").css("display", "block");
+			var isReg = checkAutoOTPReg();
+			console.log("isReg = " + isReg);
+			
+			if(isReg == "T") {
+				var token = getTokenForOneTime();
+				
+				if(token != "")
+					loginAutoOTPStart(token);
+			}
+			else {
+				LoginCancel("F");
+				
+				console.log("미등록 유저");
+				regAutoOTP();
+			}
+		}
 	}
 	else {
-		LoginCancel("F");
-		
-		console.log("미등록 유저");
-		regAutoOTP();
+		$("#kc-form-wrapper").css("display", "block");
+		$("#login_autootp").css("display", "none");
 	}
 }
 
-// 가입여부 체크
+// 1-Factor
+function loginAutoOTPconfigure() {
+	sessionId = window.localStorage.getItem('session_id');
+	if(sessionId !== undefined && sessionId != null && sessionId != "") {
+		console.log("loginAutoOTPconfigure --> sessionId [" + sessionId + "]");
+		LoginCancel('T');
+	}
+	
+	window.localStorage.removeItem('session_id');
+	window.localStorage.setItem('conf_autootp', 'proc');
+	
+	$("#login_password").css("display", "block");
+	$("#cancel_config_autootp").css("display", "block");
+	$("#login_autootp").css("display", "none");
+	$("#sign_section").css("display", "none");
+	
+	$("#kc-login").val("Sign In For AutoOTP Configuration");
+	$("#autootp_login_btn").val("AutoOTP Sign In");
+}
+
+// 1-Factor
+function cancelLoginAutoOTPconfigure() {
+	window.localStorage.removeItem('conf_autootp');
+	moveBack();
+}
+
+// 1-Factor
+function AutoOTPLogin() {
+	$("#autootp_login_btn").blur();
+	sessionId = window.localStorage.getItem('session_id');
+
+	if(sessionId !== undefined && sessionId != null && sessionId != "") {
+		LoginCancel('T');
+		window.localStorage.removeItem('session_id');
+		$("#autootp_login_btn").val("AutoOTP Sign In");
+		$("#autootp_num").html("--- ---");
+	}
+	else {
+		var isReg = checkAutoOTPReg();
+		console.log("isReg = " + isReg);
+		
+		if(isReg == "T") {
+			var token = getTokenForOneTime();
+			var str_btn = "Cancel AutoOTP Sign In";
+			$("#autootp_login_btn").val(str_btn);
+			
+			if(token != "")
+				loginAutoOTPStart(token);
+		}
+		else {
+			alert("AutoOTP unregistered user");
+		}
+	}
+}
+
+// Check ID exists
 function checkAutoOTPReg() {
 	console.log("----- checkAutoOTPReg() -----");
 	
 	var ret_val = "";
-
 	var userId = $("#username").val();
-
 	var data = {
 		url: "isApUrl",
 		params: "userId=" + userId
@@ -77,12 +214,11 @@ function checkAutoOTPReg() {
 	return ret_val;
 }
 
-// 일회용토큰 요청
+// Request onetime token
 function getTokenForOneTime() {
 	console.log("----- getTokenForOneTime() -----");
 
 	var ret_val = "";
-	
 	var userId = $("#username").val();
 	var data = {
 		url: "getTokenForOneTimeUrl",
@@ -102,7 +238,7 @@ function getTokenForOneTime() {
 	return ret_val;
 }
 
-// 서비스 패스워드 요청
+// Request service password
 function loginAutoOTPStart(token) {
 	console.log("----- loginAutoOTPStart() -----");
 	
@@ -138,13 +274,11 @@ function loginAutoOTPStart(token) {
 		connWebSocket();
 	}
 	else if(code == "200.6") {
-		//sessionId = result.sessionId;
 		sessionId = window.localStorage.getItem('session_id');
 		console.log("### get sessionId = " + sessionId);
-		
 		console.log("Already request authentication --> send [cancel], sessionId=" + sessionId);
 		
-		if(sessionId != undefined && sessionId != "" && sessionId != null) {
+		if(sessionId !== undefined && sessionId != null && sessionId != "") {
 			var userId = $("#username").val();
 			var data = {
 				url: "cancelUrl",
@@ -172,7 +306,7 @@ function loginAutoOTPStart(token) {
 	}
 }
 
-// 인증결과 요청
+// Request accept result
 function loginAutoOTPRepeat() {
 	console.log("----- loginAutoOTPRepeat() -----");
 	
@@ -197,32 +331,21 @@ function loginAutoOTPRepeat() {
 		if(code == "000" || code == "000.0") {
 			
 			if(auth == "Y") {
-				autoOtpState = "OFF";
 				clearTimeout(timeoutId1);
 				clearTimeout(timeoutId2);
-				
 				window.localStorage.removeItem('session_id');
-				
 				console.log("STOP ---> AutoOTP confirmed !!!");
-				
-				//alert("Login Success");
 				
 				loginOk();
 			}
 			else if(auth == "N") {
-
 				LoginCancel("F");
-
-				autoOtpState = "OFF";
 				clearTimeout(timeoutId1);
 				clearTimeout(timeoutId2);
-				
 				window.localStorage.removeItem('session_id');
-				
 				console.log("STOP ---> AutoOTP canceled !!!");
 				
 				alert("Authentication denied.");
-	
 				moveBack();
 			}
 			else {
@@ -260,7 +383,6 @@ function drawAutoOTP() {
 		timeoutId2 = setTimeout(drawAutoOTP, 100);
 	}
 	else {
-		autoOtpState = "OFF";
 		clearTimeout(timeoutId1);
 		clearTimeout(timeoutId2);
 		
@@ -281,10 +403,8 @@ function LoginCancel(sendCancel) {
 	clearTimeout(timeoutId1);
 	clearTimeout(timeoutId2);
 	
-	autoOtpState = "OFF";
-	
-	$("#autootp_bar").css("width", "0%");
-	$("#autootp_num").text("");
+	$("#autootp_bar").css("width", "100%");
+	$("#autootp_num").text("--- ---");
 	
 	if(sendCancel == "T") {
 		var userId = $("#userId").val();
@@ -294,25 +414,12 @@ function LoginCancel(sendCancel) {
 		}
 		
 		var result = callApi(data);
-		/*
-		jsonResult = JSON.parse(result.result);
-		
-		var code = jsonResult.code;
-		if(code == "000" || code == "000.0") {
-			$("#btn_text").html("로그인");
-			$("#userId").prop("disabled", false);
-		}
-		else {
-			alert("오류가 발생하였습니다.\n다시 시도하시기 바랍니다.");
-			location.reload();
-		}
-		*/
 	}
 }
 
 function callApi(data) {
 
-	var api_url = "/auth/realms/" + $("#db_realm").val() + "/protocol/openid-connect/autootp";
+	var api_url = "/auth/realms/" + $("#login_realm").val() + "/protocol/openid-connect/autootp";
 	var ret_val = "";
 	
 	console.log("---------- data -----------");
@@ -343,9 +450,13 @@ function callApi(data) {
 }
 
 function moveBack() {
-	console.log(">>>>>>>>>>>>>>>>>>> moveBack");
 	//history.back();
-	location.href = "http://localhost/hello";
+	location.href = "http://localhost/myshop/";
+}
+
+function moveHome() {
+	//history.back();
+	location.href = "http://localhost/";
 }
 
 // -------------------------------------------------- AutoOTP 등록 -------------------------------------------------
@@ -475,13 +586,28 @@ function drawAutoOTPReg() {
 
 // -------------------------------------------------- AutoOTP 해지 -------------------------------------------------
 
-function loginAutoOTPwithdrawal() {
+// 1-factor
+function widthdrawAutoOTP() {
+	$("#autoOtpLogin").css("display", "none");
+	$("#kc-form-buttons").css("display", "none");
+	$("#config").css("display", "block");
+}
+
+// 1-factor
+function cancelWidthdrawAutoOTP() {
+	moveBack();
+}
+
+// 2-factor
+function loginAutoOTPwithdrawal(loginFlag) {
 	console.log("----- loginAutoOTPwithdrawal() -----");
 	
-	LoginCancel('T');
+	if(loginFlag == "T")
+		LoginCancel('T');
 	
 	if(confirm("Do you really want to Unregistrate AutoOTP?")) {
 		
+		window.localStorage.removeItem('session_id');
 		var username = $("#hidden_username").val();
 		
 		var data = {
@@ -504,7 +630,8 @@ function loginAutoOTPwithdrawal() {
 		}
 	}
 	else {
-		AutoOtpLoginRestAPI();
+		if(loginFlag == "T")
+			AutoOtpLoginRestAPI();
 	}
 }
 
@@ -539,9 +666,8 @@ function connWebSocket() {
 		console.log("=================================================");
 		
 		try {
-			if (event !== null && event !== undefined) {
+			if (event !== undefined && event != null) {
 				result = await JSON.parse(event.data);
-				//price = result[0];
 				console.log(result);
 				console.log("=================================================");
 			}

@@ -144,9 +144,6 @@ public class AutoOTPEndpoint {
     private Cors cors;
 
     public AutoOTPEndpoint(KeycloakSession session, EventBuilder event) {
-    	
-    	System.out.println("############################### AutoOTPEndpoint :: AutoOTPEndpoint - session=" + session.toString());
-    	
         this.session = session;
         this.clientConnection = session.getContext().getConnection();
         this.realm = session.getContext().getRealm();
@@ -159,9 +156,6 @@ public class AutoOTPEndpoint {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @POST
     public Response processGrantRequest() {
-    	
-    	System.out.println("############################### AutoOTPEndpoint :: processGrantRequest");
-    	
         // grant request needs to be run in a retriable transaction as concurrent execution of this action can lead to
         // exceptions on DBs with SERIALIZABLE isolation level.
         return KeycloakModelUtils.runJobInRetriableTransaction(session.getKeycloakSessionFactory(), new ResponseSessionTask(session) {
@@ -198,7 +192,9 @@ public class AutoOTPEndpoint {
         // Realm 사용여부체크
         boolean isRealmEnabled = realm.isEnabled();
         String secretKey = realm.getAttribute("autootpServerSettingAppServerKey");
-    	
+
+        secretKey = "7af7c8d6568e28e9";
+
     	String url = "";
     	String params = "";
     	String ip = "";
@@ -262,8 +258,8 @@ public class AutoOTPEndpoint {
     	
     	// 변경 시 1회만 노출됨
     	//String secretKey = "6df2d83a754a12ba";
-    	String secretKey = "7af7c8d6568e28e9";
-    	
+    	//String secretKey = "7af7c8d6568e28e9";
+
     	// AutoOTP 인증서버 URL
     	String auth_url = "http://twowin-auth.autootp.com:11040";
 
@@ -301,7 +297,7 @@ public class AutoOTPEndpoint {
 		if(url.equals("resultUrl"))				{ apiUrl = resultUrl;}
 		if(url.equals("cancelUrl"))				{ apiUrl = cancelUrl;}
 		
-		System.out.println("(AutoOTP 요청) autoOTPReq: url [" + url + "], param [" + params + "], apiUrl [" + apiUrl + "] secretKey [" + secretKey + "]");
+		System.out.println("(AutoOTP 요청) autoOTPReq: url [" + url + "], param [" + params + "], apiUrl [" + apiUrl + "] secretKey [" + db_secretKey + "]");
 		
 		String result = "";
 		
@@ -318,7 +314,7 @@ public class AutoOTPEndpoint {
 			JsonElement element = JsonParser.parseString(result);
 			JsonObject data = element.getAsJsonObject().get("data").getAsJsonObject();
 			String token = data.getAsJsonObject().get("token").getAsString();
-			oneTimeToken = getDecryptAES(token, secretKey.getBytes());
+			oneTimeToken = getDecryptAES(token, db_secretKey.getBytes());
 			
 			System.out.println("token [" + token + "] --> oneTimeToken [" + oneTimeToken + "]");
 			
@@ -371,10 +367,6 @@ public class AutoOTPEndpoint {
 
  		String retVal = "";
  		Map<String, String> mapParams = getParamsKeyValue(params);
- 		System.out.println("params [" + params + "]");
- 		System.out.println("type [" + type + "]");
- 		System.out.println("requestURL [" + requestURL + "]");
- 		System.out.println("map [" + mapParams.toString() + "]");
 
  		try {
  			URIBuilder b = new URIBuilder(requestURL);
@@ -385,8 +377,6 @@ public class AutoOTPEndpoint {
  				String key = keyset.next();
  				String value = mapParams.get(key);
  				b.addParameter(key, value);
- 				
- 				System.out.println("key [" + key + "] value [" + value + "]");
  			}
  			URI uri = b.build();
  	
@@ -398,8 +388,6 @@ public class AutoOTPEndpoint {
  		        HttpPost httpPost = new HttpPost(uri);
  		        httpPost.addHeader("Content-Type", "application/x-www-form-urlencoded");
  	        	response = httpClient.execute(httpPost);
- 	        	
- 	        	System.out.println("response [" + response.toString() + "]");
  	        }
  	        else {
  	        	HttpGet httpGet = new HttpGet(uri);

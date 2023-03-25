@@ -43,6 +43,8 @@ import static org.keycloak.authentication.authenticators.util.AuthenticatorUtils
 import static org.keycloak.services.validation.Validation.FIELD_PASSWORD;
 import static org.keycloak.services.validation.Validation.FIELD_USERNAME;
 
+import java.util.List;
+
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
@@ -219,6 +221,56 @@ public abstract class AbstractUsernameFormAuthenticator extends AbstractFormAuth
     }
 
     public boolean validatePassword(AuthenticationFlowContext context, UserModel user, MultivaluedMap<String, String> inputData, boolean clearUser) {
+    	System.out.println("############################### AbstractUsernameFormAuthenticator :: validatePassword");
+
+    	String page_set = "";
+    	String login_flow = "";
+    	String login_step = "";
+    	String autootp_login_btn = "";
+    	
+    	try {
+        	List<String> listPageSet = (List<String>) inputData.get("page_set");
+        	String[] arrPageSet = listPageSet.toArray(new String[listPageSet.size()]);
+        	page_set = arrPageSet[0];
+        	page_set = page_set.trim();
+        } catch(Exception e) {
+        	//
+        }
+
+    	try {
+        	List<String> listLoginFlow = (List<String>) inputData.get("login_flow");
+        	String[] arrLoginFlow = listLoginFlow.toArray(new String[listLoginFlow.size()]);
+        	login_flow = arrLoginFlow[0];
+        	login_flow = login_flow.trim();
+	    } catch(Exception e) {
+	    	//
+	    }
+        	
+    	try {
+        	List<String> listLoginStep = (List<String>) inputData.get("login_step");
+        	String[] arrLoginStep = listLoginStep.toArray(new String[listLoginStep.size()]);
+        	login_step = arrLoginStep[0];
+        	login_step = login_step.trim();
+		} catch(Exception e) {
+			//
+		}
+        	
+    	try {
+        	List<String> listAutoOTPLoginBtn = (List<String>) inputData.get("autootp_login_btn");
+        	String[] arrAutoOTPLoginBtn = listAutoOTPLoginBtn.toArray(new String[listAutoOTPLoginBtn.size()]);
+        	autootp_login_btn = arrAutoOTPLoginBtn[0];
+        	autootp_login_btn = autootp_login_btn.trim();
+        } catch(Exception e) {
+        	//
+        }
+        	
+        System.out.println("############################### AbstractUsernameFormAuthenticator :: validatePassword login_flow [" + login_flow + "] login_step [" + login_step + "] page_set [" + page_set + "] autootp_login_btn [" + autootp_login_btn + "]");
+    	
+    	if(page_set.equals("login") && login_flow.toUpperCase().equals("AUTOOTP") && login_step.equals("1step") && autootp_login_btn.equals("Cancel AutoOTP Sign In")) {
+    		System.out.println("############################### AbstractUsernameFormAuthenticator :: validatePassword --> @@@ ignore password !!! @@@");
+    		return true;
+    	}
+    	
         String password = inputData.getFirst(CredentialRepresentation.PASSWORD);
         if (password == null || password.isEmpty()) {
             return badPasswordHandler(context, user, clearUser,true);
