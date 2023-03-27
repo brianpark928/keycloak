@@ -191,9 +191,6 @@ public class AutoOTPEndpoint {
 
         // Realm 사용여부체크
         boolean isRealmEnabled = realm.isEnabled();
-        String secretKey = realm.getAttribute("autootpServerSettingAppServerKey");
-
-        secretKey = "7af7c8d6568e28e9";
 
     	String url = "";
     	String params = "";
@@ -207,14 +204,47 @@ public class AutoOTPEndpoint {
     	
     	url = arrUrl[0];
     	params = arrParams[0];
+
         
+        // DB정보조회
+        String dbDomain = realm.getAttribute("autootpAppSettingDomain");
+        String dbEmail = realm.getAttribute("autootpAppSettingEmail");
+        String dbIpAddr = realm.getAttribute("autootpAppSettingIpAddress");
+        String dbName = realm.getAttribute("autootpAppSettingName");
+        String dbProxyDomain = realm.getAttribute("autootpAppSettingProxyServerDomain");
+        String dbStep = realm.getAttribute("autootpAppSettingStep");
+        String dbDomainValidToken = realm.getAttribute("autootpReturnDomainValidationToken");
+        String dbSecretKey = realm.getAttribute("autootpServerSettingAppServerKey");
+        String dbAuthDomain = realm.getAttribute("autootpServerSettingAuthServerDomain");
+        
+        if(url.equals("isApUrl")) {
+	    	System.out.println("autootpAppSettingDomain [" + dbDomain + "]");
+	    	System.out.println("autootpAppSettingEmail [" + dbEmail + "]");
+	    	System.out.println("autootpAppSettingIpAddress [" + dbIpAddr + "]");
+	    	System.out.println("autootpAppSettingName [" + dbName + "]");
+	    	System.out.println("autootpAppSettingProxyServerDomain [" + dbProxyDomain + "]");
+	    	System.out.println("autootpAppSettingStep [" + dbStep + "]");
+	    	System.out.println("autootpReturnDomainValidationToken [" + dbDomainValidToken + "]");
+	    	System.out.println("autootpServerSettingAppServerKey [" + dbSecretKey + "]");
+	    	System.out.println("autootpServerSettingAuthServerDomain [" + dbAuthDomain + "]");
+        }
+        
+        String secretKey = dbSecretKey;
+    	//secretKey = "7af7c8d6568e28e9";
+    	
+    	// AutoOTP 인증서버 URL
+    	String auth_url = dbAuthDomain;
+    	//auth_url = "http://twowin-auth.autootp.com:11040";
+
+
+    	
     	System.out.println("############################### AutoOTPEndpoint :: processGrantRequestInternal - formParams [" + formParams.toString() + "] url [" + url + "] params [" + params + "] ip [" + ip + "] secretKey [" + secretKey + "]");
     	
     	checkParameterDuplicated();
     	
     	//return resourceOwnerPasswordCredentialsGrant();
     	
-    	Map<String, Object> callResult = callAutoOTPReq(secretKey, url, params);
+    	Map<String, Object> callResult = callAutoOTPReq(secretKey, auth_url, url, params);
 
         //String str = "{\"key\":\"res.string\", \"value\":\"AutoOTP response text\"}";
         cors.build(httpResponse);
@@ -254,14 +284,11 @@ public class AutoOTPEndpoint {
     
     // ----------------------------------------------------------------------------------------- 내부함수
     
-    public Map<String, Object> callAutoOTPReq(String db_secretKey, String url, String params) {
+    public Map<String, Object> callAutoOTPReq(String db_secretKey, String auth_url, String url, String params) {
     	
     	// 변경 시 1회만 노출됨
     	//String secretKey = "6df2d83a754a12ba";
     	//String secretKey = "7af7c8d6568e28e9";
-
-    	// AutoOTP 인증서버 URL
-    	String auth_url = "http://twowin-auth.autootp.com:11040";
 
     	// AutoOTP 등록여부 확인
     	String isApUrl = auth_url + "/ap/rest/auth/isAp";
