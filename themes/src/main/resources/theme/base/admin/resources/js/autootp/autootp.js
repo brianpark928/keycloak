@@ -30,6 +30,8 @@ module.controller('AutoOTPCtrl', function($scope, $http)
 		$scope.autootpDevcenterReloadDisable = true;
 	}  
 
+    $scope.autootpDevcenterRemailDisable = true;
+	$scope.autootpDevcenterRemailSettingDisable = true;
 	if($scope.realm.attributes.autootpReturnServerProgressStatus != undefined && $scope.realm.attributes.autootpReturnServerProgressStatus.length > 0) {
 		switch($scope.realm.attributes.autootpReturnServerProgressStatus){
 			case "01" :
@@ -61,6 +63,7 @@ module.controller('AutoOTPCtrl', function($scope, $http)
 
 
     $scope.autootpServerSettingSaveDisable = true;
+   	$scope.autootpServerSettingClearDisable = true;
     
 	if(($scope.realm.attributes.autootpServerSettingAppServerKey != undefined && $scope.realm.attributes.autootpServerSettingAppServerKey.length > 0) ||
 	   ($scope.realm.attributes.autootpServerSettingAuthServerDomain != undefined && $scope.realm.attributes.autootpServerSettingAuthServerDomain.length > 0)) { 
@@ -344,6 +347,8 @@ module.directive('kcAutootpDelete', function ($compile, $timeout, Notifications,
 						
 						                            $scope.realm.attributes.autootpServerSettingAppServerKey = "";
 						                            $scope.realm.attributes.autootpServerSettingAuthServerDomain = "";
+						                            
+						                            $scope.realm.attributes.autootpAppSettingappID = "";
 						
 						                            $scope['autootpdelete']();
 						                            
@@ -392,6 +397,8 @@ module.directive('kcAutootpDelete', function ($compile, $timeout, Notifications,
 						
 						                            $scope.realm.attributes.autootpServerSettingAppServerKey = "";
 						                            $scope.realm.attributes.autootpServerSettingAuthServerDomain = "";
+						                            
+						                            $scope.realm.attributes.autootpAppSettingappID = "";
 						
 						                            $scope['autootpdelete']();
 						                            
@@ -448,6 +455,8 @@ module.directive('kcAutootpDelete', function ($compile, $timeout, Notifications,
 										
 			                            $scope.realm.attributes.autootpServerSettingAppServerKey = "";
 			                            $scope.realm.attributes.autootpServerSettingAuthServerDomain = "";
+			                            
+			                            $scope.realm.attributes.autootpAppSettingappID = "";
 			
 			                            $scope['autootpdelete']();
 			                            
@@ -577,7 +586,7 @@ module.directive('kcDevcenterReload', function ($compile, $timeout, Notification
 												$scope.autootpDevcenterRemailSettingDisable = true;
 												break;
 											case "10" :
-												$scope.realm.attributes.autootpReturnServerProgress = "AutoOTP service is running ...";
+												$scope.realm.attributes.autootpReturnServerProgress = "AutoOTP service is running!";
 												$scope.realm.attributes.autootpReturnServerProgressStatus = objReload.data.status;
 					                            $scope.autootpDevcenterRemailDisable = true;
 												$scope.autootpDevcenterRemailSettingDisable = false;
@@ -604,7 +613,7 @@ module.directive('kcDevcenterReload', function ($compile, $timeout, Notification
 								} else if(objReload.code == "100.4") {	Notifications.error("Duplicate proxy server domain");
 								} else if(objReload.code == "100.5") {	Notifications.error("Email unavailable");
 								} else if(objReload.code == "100.6") {
-									alert("등록 후 3일이 경과되어 서버에서 자동 삭제처리 됩니다.\n새로 등록 해 주시기 바랍니다.");
+									alert("After 3 days of registration, it will be automatically deleted from the server.\nPlease register again.");
 									/////////////////////////// kcAutootpDelete http success process
 													
 		                            $scope.realm.attributes.autootpAppSettingStep = "";
@@ -730,7 +739,7 @@ module.directive('kcDevcenterRemail', function ($compile, $timeout, Notification
 										Notifications.error("Email Resend Request error~!");
 										return;
 								} else if(objRemail.code == "100.6") {
-									alert("등록 후 3일이 경과되어 서버에서 자동 삭제처리 됩니다.\n새로 등록 해 주시기 바랍니다.");
+									alert("After 3 days of registration, it will be automatically deleted from the server.\nPlease register again.");
 									/////////////////////////// kcAutootpDelete http success process
 													
 		                            $scope.realm.attributes.autootpAppSettingStep = "";
@@ -856,7 +865,7 @@ module.directive('kcDevcenterRemailSetting', function ($compile, $timeout, Notif
 										Notifications.error("Setting email Resend Request error~!");
 										return;
 								} else if(objRemailSetting.code == "100.6") {
-									alert("등록 후 3일이 경과되어 서버에서 자동 삭제처리 됩니다.\n새로 등록 해 주시기 바랍니다.");
+									alert("After 3 days of registration, it will be automatically deleted from the server.\nPlease register again.");
 									/////////////////////////// kcAutootpDelete http success process
 													
 		                            $scope.realm.attributes.autootpAppSettingStep = "";
