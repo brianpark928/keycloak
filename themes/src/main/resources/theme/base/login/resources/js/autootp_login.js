@@ -455,6 +455,14 @@ function moveBack() {
 }
 
 function moveHome() {
+	sessionId = window.localStorage.getItem('session_id');
+	if(sessionId !== undefined && sessionId != null && sessionId != "") {
+		console.log("loginAutoOTPconfigure --> sessionId [" + sessionId + "]");
+		LoginCancel('T');
+	}
+	
+	window.localStorage.removeItem('session_id');
+	
 	//history.back();
 	location.href = "http://localhost/";
 }
