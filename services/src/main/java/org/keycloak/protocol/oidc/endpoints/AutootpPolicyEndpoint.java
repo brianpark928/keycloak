@@ -262,7 +262,8 @@ public class AutootpPolicyEndpoint {
     	String secretKey = "";
     	String privateKey = "";
     	String methodType = "GET";
-    	String developerUrl = "https://testdevelopers.autootp.com";
+//    	String developerUrl = "https://testdevelopers.autootp.com";
+    	String developerUrl = "https://developers.autootp.com";
     	
         List<String> values = null;
     	int i = 0;
