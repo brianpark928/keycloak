@@ -8,6 +8,7 @@
 		<div id="kc-form">
 			<div id="kc-form-wrapper" style="display:none;">
 			
+				<input type="hidden" id="base_url" name="base_url" value="${client.baseUrl}">
 				<input type="hidden" id="page_set" name="page_set" value="autootp">
 				<input type="hidden" id="page_config" name="page_config" value="">
 				<input type="hidden" id="browser_flow_id" name="browser_flow_id" value="${realm.browserFlowAlias!''}">

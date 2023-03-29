@@ -1,6 +1,13 @@
 // AutoOTP accept wait time (seconds)
 MaxTime = 60
 
+var base_url = $("#base_url").val();
+if(base_url !== undefined && base_url != null && base_url != "") {
+	var len = base_url.length;
+	if(base_url.substr(len-1, len) != "/" && base_url.substr(len-1, len) != "\\")
+		base_url += "/";
+}
+
 var page_set = $("#page_set").val();
 if(page_set === undefined || page_set == null)
 	page_set = "";
@@ -451,7 +458,8 @@ function callApi(data) {
 
 function moveBack() {
 	//history.back();
-	location.href = "http://localhost/myshop/";
+	//location.href = "http://localhost/myshop";
+	location.href = base_url + "myshop";
 }
 
 function moveHome() {
@@ -464,7 +472,8 @@ function moveHome() {
 	window.localStorage.removeItem('session_id');
 	
 	//history.back();
-	location.href = "http://localhost/";
+	//location.href = "http://localhost";
+	location.href = base_url;
 }
 
 // -------------------------------------------------- AutoOTP 등록 -------------------------------------------------

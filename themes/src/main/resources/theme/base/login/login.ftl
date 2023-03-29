@@ -26,6 +26,7 @@
 	        	
 	            <form id="kc-form-login" onsubmit="login.disabled = true; return true;" action="${url.loginAction}" method="post">
 
+					<input type="hidden" id="base_url" name="base_url" value="${client.baseUrl}">
 					<input type="hidden" id="page_set" name="page_set" value="login">
 					<input type="hidden" id="page_config" name="page_config" value="">
 					<input type="hidden" id="login_realm" name="login_realm" value="${realm.name!''}">
