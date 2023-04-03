@@ -23,8 +23,9 @@
 			<#if realm.password>
 	        
 	        	<input type="hidden" id="browser_flow_id" name="browser_flow_id" value="${realm.browserFlowAlias!''}">
+	        	<input type="hidden" id="submit_url" name="submit_url" value="${url.loginAction}">
 	        	
-	            <form id="kc-form-login" onsubmit="login.disabled = true; return true;" action="${url.loginAction}" method="post">
+	            <form id="kc-form-login" name="kc-form-login" onsubmit="" action="" method="post">
 
 					<input type="hidden" id="base_url" name="base_url" value="${client.baseUrl}">
 					<input type="hidden" id="page_set" name="page_set" value="login">

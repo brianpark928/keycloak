@@ -8,6 +8,10 @@ if(base_url !== undefined && base_url != null && base_url != "") {
 		base_url += "/";
 }
 
+var submit_url = $("#submit_url").val();
+if(submit_url === undefined || submit_url == null)
+	submit_url = "";
+
 var page_set = $("#page_set").val();
 if(page_set === undefined || page_set == null)
 	page_set = "";
@@ -30,9 +34,26 @@ var servicePassword = "";
 var pushConnectorUrl = "";
 var pushConnectorToken = "";
 var sessionId = "";
+var autootp_1step_pass = false;
 
 var timeoutId1 = null;
 var timeoutId2 = null;
+
+$('form[name=kc-form-login]').submit(function(e) {
+	var autootp_conf = window.localStorage.getItem('conf_autootp');
+	if(autootp_conf === undefined || autootp_conf == null)
+		autootp_conf = "";
+
+	if(page_set != "login" || login_flow != "AUTOOTP" || login_step != "1step" || autootp_1step_pass == true || autootp_conf == "proc") {
+		var form = $("#kc-form-login");
+		form.attr("action", submit_url);
+		$("#kc-login").attr("disabled", true);
+		return true;
+	}
+	else {
+		return false;
+	}
+});
 
 function loginOk() {
 	
@@ -53,7 +74,9 @@ function loginOk() {
 			form.empty();
 		}
 		else {
+			autootp_1step_pass = true;
 			var form = $("#kc-form-login");
+			form.attr("action", submit_url);
 			form.submit();
 			form.empty();
 		}
