@@ -20,6 +20,7 @@
 				
 				<form id="frm" name="frm">
 					<input type="hidden" id="hidden_username" name="hidden_username" value="${(username!'')}">
+					<input type="hidden" id="autootp_info" name="autootp_info" value="${(autootp_info!'')}">
 				</form>
 
 				<div id="autoOtpLogin">
@@ -46,9 +47,11 @@
 						<input tabindex="4" class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" name="login" id="kc-login" value="Cancel Login" onclick="CancelLogin()"/>
 					</div>
 					<br>
+					<!--
 					<div style="width:100%;text-align:right;">
 						<a href="#" onclick="loginAutoOTPwithdrawal('T');" style="display:inline-block;">Unregistrate AutoOTP</a>
 					</div>
+					-->
 				</div>
 				
 				<div id="reg_qr" style="text-align:center; display:none;">
@@ -59,20 +62,21 @@
 					</span>
 					<br>
 					<span style="display:inline-block; width:100%;font-size:18px;">
-						<!--
-						ServerUrl : <span id="server_url"></span>
-						<br>
-						Company ID : <span id="corp_id"></span>
-						<br>
-						-->
 						[Register ID] <b><span id="user_id"></span></b>
 						<br>
 						<b><span id="rest_time" style="font-size:24px;text-shadow:1px 1px 2px rgba(0,0,0,0.9);color:#afafaf;"></span></b>
 					</span>
 					<br>
 
+					<!--
 					<div id="kc-form-buttons" class="${properties.kcFormGroupClass!}">				
 						<input tabindex="4" class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" name="login" id="kc-login" value="Cancel AutoOTP Registration" onclick="moveBack()"/>
+					</div>
+					-->
+				</div>
+				<div id="send_email" style="text-align:center; display:none;">
+					<div id="kc-form-buttons" class="${properties.kcFormGroupClass!}">				
+						<input tabindex="4" class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" name="btn_autootp_email" id="btn_autootp_email" value="Send AutoOTP setting email" onclick="sendAutoOTPRegEmail('F')"/>
 					</div>
 				</div>
 
@@ -84,10 +88,12 @@
 					<div id="kc-form-buttons" class="${properties.kcFormGroupClass!}">				
 						<input tabindex="4" class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" name="login" id="unreg_autootp" value="Unregistrate AutoOTP" onclick="loginAutoOTPwithdrawal('F')"/>
 					</div>
+					<!--
 					<br>
 					<div style="width:100%;text-align:right;">
-						<a href="#" onclick="cancelWidthdrawAutoOTP();" style="display:inline-block;">Back to login</a>
+						<a href="#" onclick="cancelWithdrawAutoOTP();" style="display:inline-block;">Back to Login</a>
 					</div>
+					-->
 				</div>
 
 			</div>
@@ -96,6 +102,22 @@
 					Wait for loading...
 				</span>
 			</div>
+		</div>
+		<div id="txt_autootp_email" name="txt_autootp_email" style="width:100%;text-align:center; display:none;">
+			Waiting for sending email...
+			<br>
+			&nbsp;
+		</div>
+		<div id="link_autootp_email" name="link_autootp_email" style="width:100%;text-align:right; display:none;">
+	    	<a href="#" onclick="sendAutoOTPRegEmail('T');" style="display:inline-block;">Send AutoOTP setting email</a>
+	    	<br>
+	    	&nbsp;
+		</div>
+		<div style="width:100%;text-align:right;">
+			<!--
+	    	<a href="#" onclick="sendAutoOTPRegEmail();" style="display:inline-block;">AutoOTP RegEmail</a>
+	    	-->
+	    	<a href="#" onclick="cancelWithdrawAutoOTP();" style="display:inline-block;">Back to Login</a>
 		</div>
 	    <script type="text/javascript" src="${url.resourcesCommonPath}/node_modules/jquery/dist/jquery.min.js"></script>
 	    <script type="text/javascript" src="${url.resourcesPath}/js/autootp_login.js"></script>

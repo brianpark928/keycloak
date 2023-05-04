@@ -33,6 +33,7 @@
 					<input type="hidden" id="login_realm" name="login_realm" value="${realm.name!''}">
 					<input type="hidden" id="login_step" name="login_step" value="${realm.attributeautootpAppSettingStep!''}">
 					<input type="hidden" id="login_flow" name="login_flow" value="">
+					<input type="hidden" id="autootp_info" name="autootp_info" value="">
 
 	                <#if !usernameHidden??>
 	                    <div class="${properties.kcFormGroupClass!}">
@@ -111,19 +112,25 @@
 						<div id="autootp_login" class="${properties.kcFormGroupClass!}">				
 							<input tabindex="4" class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" name="autootp_login_btn" id="autootp_login_btn" value="AutoOTP Sign In" onclick="AutoOTPLogin()"/>
 						</div>
+						<!--
 						<div style="width:100%;text-align:right;">
 							<a href="#" onclick="loginAutoOTPconfigure();" style="display:inline-block;">Configure AutoOTP</a>
+						</div>
+						-->
+						
+						<div style="width:100%;text-align:right;">
+					    	<a href="#" onclick="loginAutoOTPconfigure();" style="display:inline-block;">Send AutoOTP setting email</a>
 						</div>
 					</div>
 
 					<div id="cancel_config_autootp" name="cancel_config_autootp" style="width:100%;text-align:right;display:none;">
 						<br>
-						<a href="#" onclick="cancelLoginAutoOTPconfigure();" style="display:inline-block;">Cancel AutoOTP Configuration</a>
+						<a href="#" onclick="cancelLoginAutoOTPconfigure();" style="display:inline-block;">Back to Login</a>
 					</div>
 						
 					<div id="move_home_btn" name="move_home_btn" style="width:100%;text-align:right;display:none;">
 						<br>
-						<a href="#" onclick="moveHome();" style="display:inline-block;">Back to home</a>
+						<a href="#" onclick="moveHome();" style="display:inline-block;">Back to Application</a>
 					</div>
 
 					<script type="text/javascript" src="${url.resourcesCommonPath}/node_modules/jquery/dist/jquery.min.js"></script>

@@ -115,8 +115,13 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
-import static org.keycloak.utils.LockObjectsForModification.lockUserSessionsForModification;
+//import static org.keycloak.utils.LockObjectsForModification.lockUserSessionsForModification;
+
+import org.keycloak.email.EmailTemplateProvider;
+import org.keycloak.email.EmailException;
 
 /**
  * @author <a href="mailto:aaa@bbb.ccc">xXx xxXXxx</a>
@@ -192,6 +197,9 @@ public class AutoOTPEndpoint {
         // Realm 사용여부체크
         boolean isRealmEnabled = realm.isEnabled();
 
+        String msg = "OK";
+        String code = "000";
+        
     	String url = "";
     	String params = "";
     	String ip = "";
@@ -205,7 +213,10 @@ public class AutoOTPEndpoint {
     	url = arrUrl[0];
     	params = arrParams[0];
 
-        
+    	System.out.println("############################### AutoOTPEndpoint :: processGrantRequestInternal - isRealmEnabled [" + isRealmEnabled + "] formParams [" + formParams.toString() + "] url [" + url + "] params [" + params + "]");
+
+    	Map<String, Object> callResult = null;
+
         // DB정보조회
         String dbDomain = realm.getAttribute("autootpAppSettingDomain");
         String dbEmail = realm.getAttribute("autootpAppSettingEmail");
@@ -217,7 +228,7 @@ public class AutoOTPEndpoint {
         String dbSecretKey = realm.getAttribute("autootpServerSettingAppServerKey");
         String dbAuthDomain = realm.getAttribute("autootpServerSettingAuthServerDomain");
         
-        if(url.equals("isApUrl")) {
+        if(url.equals("isApUrl") || url.equals("sendEmail")) {
 	    	System.out.println("autootpAppSettingDomain [" + dbDomain + "]");
 	    	System.out.println("autootpAppSettingEmail [" + dbEmail + "]");
 	    	System.out.println("autootpAppSettingIpAddress [" + dbIpAddr + "]");
@@ -229,23 +240,122 @@ public class AutoOTPEndpoint {
 	    	System.out.println("autootpServerSettingAuthServerDomain [" + dbAuthDomain + "]");
         }
         
-        String secretKey = dbSecretKey;
-    	//secretKey = "7af7c8d6568e28e9";
-    	
-    	// AutoOTP 인증서버 URL
-    	String auth_url = dbAuthDomain;
-    	//auth_url = "http://twowin-auth.autootp.com:11040";
 
+    	if(url.equals("sendEmail")) {
+    		System.out.println(">>>>>>>>>>>>>>> send email : session=" + session.toString() + ", realm=" + realm.toString());
 
-    	
-    	System.out.println("############################### AutoOTPEndpoint :: processGrantRequestInternal - formParams [" + formParams.toString() + "] url [" + url + "] params [" + params + "] ip [" + ip + "] secretKey [" + secretKey + "]");
-    	
-    	checkParameterDuplicated();
-    	
-    	//return resourceOwnerPasswordCredentialsGrant();
-    	
-    	Map<String, Object> callResult = callAutoOTPReq(secretKey, auth_url, url, params);
+    		String targetUser = "";
+    		String baseUrl = "";
+    		
+    		Map<String, String> mapParams = getParamsKeyValue(params);
+ 			Set<String> set = mapParams.keySet();
+ 			Iterator<String> keyset = set.iterator();
+ 			while(keyset.hasNext()) {
+ 				String key = keyset.next();
+ 				String value = mapParams.get(key);
+ 				
+ 				if(key.equals("userId"))
+ 					targetUser = value;
+ 				
+ 				if(key.equals("base_url"))
+ 					baseUrl = value;
+ 			}
 
+ 			/*
+    		UserSessionModel userSession = null;
+    		AuthenticationManager.AuthResult authResult = AuthenticationManager.authenticateIdentityCookie(session, realm, false);
+    		if (authResult != null) {
+				userSession = authResult.getSession();
+				UserModel user = userSession.getUser();
+				
+				//String username = userSession.getLoginUsername();
+				//System.out.println(">>>>>>>>>>>>>>> send email : username [" + username + "]");
+				
+		        boolean isEnabled = user.isEnabled();
+		        boolean isEmailVerified = user.isEmailVerified();
+		        String strIsEnabled = "F";
+		        String strIsEmailVerified = "F";
+		        if(isEnabled)		strIsEnabled = "T";
+		        if(isEmailVerified)	strIsEmailVerified = "T";
+		        
+		        String userId = user.getId();
+		        String username = user.getUsername();
+		        String firstName = user.getFirstName();
+		        String lastName = user.getLastName();
+		        String email = user.getEmail();
+		        
+		        System.out.println(">>>>>>>>>>>>>>> send email : strIsEnabled [" + strIsEnabled + "] strIsEmailVerified [" + strIsEmailVerified + "] userId [" + userId + "] username [" + username + "] lastName [" + lastName + "] firstName [" + firstName + "] email [" + email + "]");
+    		}
+    		else {
+    			System.out.println(">>>>>>>>>>>>>>> send email : Not login state !!!");
+    		}
+    		*/
+ 			
+    		/*
+    		String id = "18380ca3-76d6-4d9a-8ea0-062e8e8ddd71"; // tunar1
+    		org.keycloak.admin.client.resource.UserResource userInfo = realm.users().get(id);
+
+	        try {
+	            userInfo.sendVerifyEmail();
+	            System.out.println(">>>>>>>>>>>>>>> send email : OK");
+	        } catch (ClientErrorException e) {
+	        	System.out.println(">>>>>>>>>>>>>>> send email : Failed --> " + e.toString());
+	        }
+			*/
+    		
+ 			UserModel user = session.users().getUserByUsername(realm, targetUser);
+ 			System.out.println(">>>>>>>>>>>>> targetUser=" + targetUser + ", user=" + user + ", email=" + user.getEmail() + ", baseUrl=" + baseUrl);
+ 			
+    		String addr = user.getEmail();
+    		String link = "realms/" + realm.getName() + "/login-actions/autootp-regist";
+    		//long expirationInMinutes = realm.getAccessCodeLifespanUserAction() / 60;
+    		long expirationInMinutes = realm.getActionTokenGeneratedByUserLifespan() / 60;
+    		
+    		try {
+    			System.out.println(">>>>>>>>>>>>> sendAutoOTPEmail start....");
+    			
+				UserModel userModel = null; //session.users().addUser(session.getContext().getRealm(), "tunar1");
+				//System.out.println(">>>>>>>>>>>>> sendAutoOTPEmail user=" + userModel.toString());
+				
+    			session.getProvider(EmailTemplateProvider.class).sendAutoOTPEmail(link, targetUser, dbSecretKey, dbAuthDomain, expirationInMinutes, addr, baseUrl);
+    			System.out.println(">>>>>>>>>>>>> sendAutoOTPEmail send : link [" + link + "] target [" + targetUser + "] secretKey [" + dbSecretKey + "] authDoamin [" + dbAuthDomain + "] expMin [" + expirationInMinutes + "] addr [" + addr + "] baseUrl [" + baseUrl + "]");
+    		} catch (EmailException ee) {
+    			System.out.println(">>>>>>>>>>>>> sendAutoOTPEmail EmailException error : " + ee.toString());
+
+    			msg = ee.toString();
+    			code = "998";
+    		} catch (Exception e) {
+    			System.out.println(">>>>>>>>>>>>> sendAutoOTPEmail Exception error : " + e.toString());
+    			
+    			msg = e.toString();
+    			code = "999";
+    		}
+	        
+    		
+    		Map<String, String> result = new HashMap<String, String>();
+    		result.put("msg", msg);
+    		result.put("code", code);
+    		
+    		callResult = new HashMap<String, Object>();
+    		callResult.put("result", result);
+    	}
+    	else {
+	        String secretKey = dbSecretKey;
+	    	//secretKey = "7af7c8d6568e28e9";
+	    	
+	    	// AutoOTP 인증서버 URL
+	    	String auth_url = dbAuthDomain;
+	    	//auth_url = "http://twowin-auth.autootp.com:11040";
+	    	
+	    	System.out.println("############################### AutoOTPEndpoint :: processGrantRequestInternal - ip [" + ip + "] secretKey [" + secretKey + "] auth_url [" + auth_url + "]");
+	    	
+	    	checkParameterDuplicated();
+	    	
+	    	//return resourceOwnerPasswordCredentialsGrant();
+	    	
+	    	callResult = callAutoOTPReq(secretKey, auth_url, url, params);
+    	}
+    	
         //String str = "{\"key\":\"res.string\", \"value\":\"AutoOTP response text\"}";
         cors.build(httpResponse);
         return cors.builder(Response.ok(callResult, MediaType.APPLICATION_JSON_TYPE)).build();
@@ -354,6 +464,8 @@ public class AutoOTPEndpoint {
 		}
 		
 		// AutoOTP 승인 대기
+		String dateTime = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+		String myInfo = "";
 		if(url.equals("resultUrl")) {
 			JsonElement element = JsonParser.parseString(result);
 			JsonObject data = element.getAsJsonObject().get("data").getAsJsonObject();
@@ -361,10 +473,13 @@ public class AutoOTPEndpoint {
 			String userId = data.getAsJsonObject().get("userId").getAsString();
 			
 			if(auth.equals("Y")) {
-				// 로그인 로그 생성
+				// 로그인 성공 데이터
+				myInfo = getEncryptAES(dateTime + "|||" + userId, db_secretKey.getBytes());
+				System.out.println("AutoOTP accept result 'Y' --> myInfo [" + dateTime + "|||" + userId + "]");
 			}
 		}
 		
+		mapResult.put("autootpInfo", myInfo);
 		mapResult.put("result", result);
 		
 		return mapResult;
@@ -430,6 +545,23 @@ public class AutoOTPEndpoint {
  		
  		return retVal;
  	}
+ 	
+ 	private static String getEncryptAES(String value, byte[] key) {
+ 		String strRet = null;
+ 		
+ 		byte[]  strIV = key;
+ 		if ( key == null || strIV == null ) return null;
+	    try {
+	        SecretKey secureKey = new SecretKeySpec(key, "AES");
+ 			Cipher c = Cipher.getInstance("AES/CBC/PKCS5Padding");
+ 			c.init(Cipher.ENCRYPT_MODE, secureKey, new IvParameterSpec(strIV));
+	        byte[] byteStr = c.doFinal(value.getBytes());
+	        strRet = java.util.Base64.getEncoder().encodeToString(byteStr);
+	    } catch (Exception ex) {
+	        ex.printStackTrace();
+	    }
+	    return strRet;
+	}
  	
  	private static String getDecryptAES(String encrypted, byte[] key) {
  		String strRet = null;

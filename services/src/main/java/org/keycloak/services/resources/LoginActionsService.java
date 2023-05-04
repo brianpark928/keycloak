@@ -39,6 +39,7 @@ import org.keycloak.authentication.authenticators.browser.AbstractUsernameFormAu
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.common.VerificationException;
+import org.keycloak.common.Version;
 import org.keycloak.common.util.Time;
 import org.keycloak.crypto.SignatureProvider;
 import org.keycloak.crypto.SignatureVerifierContext;
@@ -54,6 +55,7 @@ import org.keycloak.models.ClientScopeModel;
 import org.keycloak.models.ClientSessionContext;
 import org.keycloak.models.Constants;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakUriInfo;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserConsentModel;
 import org.keycloak.models.UserModel;
@@ -84,7 +86,14 @@ import org.keycloak.services.util.LocaleUtil;
 import org.keycloak.sessions.AuthenticationSessionCompoundId;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.RootAuthenticationSessionModel;
+import org.keycloak.theme.freemarker.FreeMarkerProvider;
+import org.keycloak.theme.Theme;
 
+import javax.crypto.Cipher;
+import javax.crypto.Mac;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -95,11 +104,19 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriBuilderException;
 import javax.ws.rs.core.UriInfo;
 import java.net.URI;
+import java.net.URLDecoder;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.io.UnsupportedEncodingException;
 
 import static org.keycloak.authentication.actiontoken.DefaultActionToken.ACTION_TOKEN_BASIC_CHECKS;
 import static org.keycloak.models.utils.DefaultRequiredActions.getDefaultRequiredActionCaseInsensitively;
@@ -126,6 +143,8 @@ public class LoginActionsService {
     public static final String AUTH_SESSION_ID = "auth_session_id";
     
     public static final String CANCEL_AIA = "cancel-aia";
+    
+    public static final String AUTOOTP_REGIST_PATH = "autootp-regist";
 
     private final RealmModel realm;
 
@@ -151,9 +170,13 @@ public class LoginActionsService {
     public static UriBuilder requiredActionProcessor(UriInfo uriInfo) {
         return loginActionsBaseUrl(uriInfo).path(LoginActionsService.class, "requiredActionPOST");
     }
-
+    
     public static UriBuilder actionTokenProcessor(UriInfo uriInfo) {
         return loginActionsBaseUrl(uriInfo).path(LoginActionsService.class, "executeActionToken");
+    }
+
+    public static UriBuilder autootpRegistProcessor(UriInfo uriInfo) {
+        return loginActionsBaseUrl(uriInfo).path(LoginActionsService.class, "executeAutoOTPRegist");
     }
 
     public static UriBuilder registrationFormProcessor(UriInfo uriInfo) {
@@ -452,6 +475,122 @@ public class LoginActionsService {
                                        @QueryParam(Constants.CLIENT_ID) String clientId,
                                        @QueryParam(Constants.TAB_ID) String tabId) {
         return handleActionToken(key, execution, clientId, tabId);
+    }
+    
+    @Path("autootp-regist")
+    @GET
+    public Response executeAutoOTPRegist(@QueryParam("param") String param) {
+    	System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ LoginActionsService :: executeAutoOTPRegist - param=" + param);
+        if(param == null)
+        	param = "";
+        
+        param = param.replaceAll("_", "\\+");
+    	
+    	//Response challenge = session.getContext().form().createForm("autootp-regist.ftl");
+    	//session.getContext().challenge(challenge);
+    	boolean action = false;
+    	String execution = null;
+    	String errorMessage = "";
+
+    	//return processFlow(action, execution, authSession, AUTOOTP_REGIST_PATH, realm.getRegistrationFlow(), errorMessage, new AuthenticationProcessor());
+    	
+    	ClientModel client = null;
+    	Map<String, Object> map = new HashMap<>();
+    	map.put("param", param);
+    	
+    	String dateTime = "";
+    	long expirationInMinutes = 0L;
+    	String username = "";
+    	String dbAuthDomain = "";
+    	long gapMinute = 0L;
+		String baseUrl = "";
+
+    	if(param != null) {
+    		String dbSecretKey = realm.getAttribute("autootpServerSettingAppServerKey");
+    		System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ LoginActionsService :: executeAutoOTPRegist - dbSecretKey [" + dbSecretKey + "]");
+    		
+	    	String decParam = getDecryptAES(param, dbSecretKey.getBytes());
+	    	System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ LoginActionsService :: executeAutoOTPRegist - decParam [" + decParam + "]");
+	    	
+	    	String[] params = decParam.split("\\|\\|\\|");	// dateTime + "|||" + expirationInMinutes + "|||" + username + "|||" + URLEncode(dbAuthDomain) + "|||" + baseUrl;
+	    	
+	    	System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ LoginActionsService :: executeAutoOTPRegist - params [" + params + "]");
+	    	
+	    	if(params.length >= 4) {
+	    		try {
+		    		dateTime = params[0];
+		    		expirationInMinutes = Long.parseLong(params[1]);
+		    		username = params[2];
+		    		dbAuthDomain = params[3];
+		    		dbAuthDomain = URLDecode(dbAuthDomain);
+	    			baseUrl = params[4];
+	    			baseUrl = URLDecode(baseUrl);
+		    		
+		    		Date curDate = new Date();
+		    		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+	    			Date reqDate = dateFormat.parse(dateTime);
+		    		long reqDateTime = reqDate.getTime();
+		    		long curDateTime = curDate.getTime();
+		    		gapMinute = (curDateTime - reqDateTime) / 60000;
+		    		
+	    		} catch(ParseException pe) {
+	    			//
+	    		}
+	    		
+	    		System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ LoginActionsService :: executeAutoOTPRegist - dateTime [" + dateTime + " / gap=" + gapMinute +"min / expirationInMinutes=" + expirationInMinutes + "] username [" + username + "] dbAuthDomain [" + dbAuthDomain + "] baseUrl [" + baseUrl + "]");
+	    	}
+    	}
+    	
+    	if(gapMinute > expirationInMinutes) {
+    		System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ LoginActionsService :: executeAutoOTPRegist - expired !!!");
+    		username = "";
+    		dbAuthDomain = "";
+    	}
+    	
+    	map.put("realm", realm);
+    	map.put("baseUrl", baseUrl);
+    	map.put("gapMinute", gapMinute);
+    	map.put("expirationInMinutes", expirationInMinutes);
+    	map.put("username", username);
+    	map.put("dbAuthDomain", dbAuthDomain);
+    	
+    	try {
+    		/*
+        	ClientModel client = session.clients().getClientByClientId(realm, clientId);
+        	AuthenticationSessionModel authSession = createAuthenticationSessionForClient(clientId);
+        	
+        	System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ LoginActionsService :: executeAutoOTPRegist - client=" + client + ", authSession=" + authSession + ", flow=" + realm.getRegistrationFlow());
+        	*/
+
+    		KeycloakUriInfo uriInfo = session.getContext().getUri();
+        	String url = uriInfo.getBaseUri().toString();
+        	System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ LoginActionsService :: executeAutoOTPRegist - url=" + url);
+        	
+        	//Theme theme = getTheme();
+        	Theme theme = session.theme().getTheme(Theme.Type.LOGIN);
+            map.put("properties", theme.getProperties());
+            map.put("resourcesPath", url + "resources/" + Version.RESOURCES_VERSION + "/" + theme.getType().toString().toLowerCase() +"/" + theme.getName());
+            map.put("resourcesCommonPath", url + "resources/" + Version.RESOURCES_VERSION + "/common/keycloak");
+
+	    	FreeMarkerProvider freeMarkerUtil = session.getProvider(FreeMarkerProvider.class);
+	    	
+	    	System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ LoginActionsService :: executeAutoOTPRegist #1 theme=" + theme + ", freeMarkerUtil=" + freeMarkerUtil);
+	    	
+	    	String result = freeMarkerUtil.processTemplate(map, "autootp-regist.ftl", theme);
+	    	
+	    	//System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ LoginActionsService :: executeAutoOTPRegist #2 result=" + result);
+	    	
+	    	ResponseBuilder rb = Response.status(Status.OK)
+	                .entity(result)
+	                .cacheControl(CacheControlUtil.noCache());
+	    	
+	    	System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ LoginActionsService :: executeAutoOTPRegist #3");
+	    	
+	        return rb.build();
+    	} catch(Exception e) {
+    		System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ LoginActionsService :: executeAutoOTPRegist - error : " + e.toString());
+    		throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
+    	}
     }
 
     protected <T extends JsonWebToken & SingleUseObjectKeyModel> Response handleActionToken(String tokenString, String execution, String clientId, String tabId) {
@@ -1073,4 +1212,49 @@ public class LoginActionsService {
         return false;
     }
 
+    private static String getEncryptAES(String value, byte[] key) {
+ 		String strRet = null;
+ 		
+ 		byte[]  strIV = key;
+ 		if ( key == null || strIV == null ) return null;
+	    try {
+	        SecretKey secureKey = new SecretKeySpec(key, "AES");
+ 			Cipher c = Cipher.getInstance("AES/CBC/PKCS5Padding");
+ 			c.init(Cipher.ENCRYPT_MODE, secureKey, new IvParameterSpec(strIV));
+	        byte[] byteStr = c.doFinal(value.getBytes());
+	        strRet = java.util.Base64.getEncoder().encodeToString(byteStr);
+	    } catch (Exception ex) {
+	        ex.printStackTrace();
+	    }
+	    return strRet;
+	}
+ 	
+ 	private static String getDecryptAES(String encrypted, byte[] key) {
+ 		String strRet = null;
+ 		
+ 		byte[]  strIV = key;
+ 		if ( key == null || strIV == null ) return null;
+ 		try {
+ 			SecretKey secureKey = new SecretKeySpec(key, "AES");
+ 			Cipher c = Cipher.getInstance("AES/CBC/PKCS5Padding");
+ 			c.init(Cipher.DECRYPT_MODE, secureKey, new IvParameterSpec(strIV));
+ 			byte[] byteStr = java.util.Base64.getDecoder().decode(encrypted);//Base64Util.getDecData(encrypted);
+ 			strRet = new String(c.doFinal(byteStr), "utf-8");
+ 		} catch (Exception e) {
+ 			e.printStackTrace();
+ 		}
+ 		return strRet;	
+ 	}
+ 	
+ 	public String URLDecode(String param) {
+    	String retVal = "";
+    	
+    	try {
+            retVal = URLDecoder.decode(param, "UTF-8");
+        } catch (UnsupportedEncodingException e1) {
+            e1.printStackTrace();
+        }
+    	
+    	return retVal;
+    }
 }

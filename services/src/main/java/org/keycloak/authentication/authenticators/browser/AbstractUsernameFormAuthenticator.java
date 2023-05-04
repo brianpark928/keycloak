@@ -44,6 +44,14 @@ import static org.keycloak.services.validation.Validation.FIELD_PASSWORD;
 import static org.keycloak.services.validation.Validation.FIELD_USERNAME;
 
 import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import javax.crypto.Cipher;
+import javax.crypto.Mac;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -221,12 +229,21 @@ public abstract class AbstractUsernameFormAuthenticator extends AbstractFormAuth
     }
 
     public boolean validatePassword(AuthenticationFlowContext context, UserModel user, MultivaluedMap<String, String> inputData, boolean clearUser) {
-    	System.out.println("############################### AbstractUsernameFormAuthenticator :: validatePassword");
+    	System.out.println("############################### AbstractUsernameFormAuthenticator :: validatePassword - context = " + context);
 
     	String page_set = "";
     	String login_flow = "";
+    	String autootp_info = "";
+    	String username = "";
+    	String dateTime = "";
+    	long gapSeconds = 0;
+    	
+    	long maxGapSeconds = 10;
+    	
     	String login_step = "";
-    	String autootp_login_btn = "";
+    	String dbSecretKey = "";
+
+    	String userId = user.getUsername();
     	
     	try {
         	List<String> listPageSet = (List<String>) inputData.get("page_set");
@@ -234,7 +251,7 @@ public abstract class AbstractUsernameFormAuthenticator extends AbstractFormAuth
         	page_set = arrPageSet[0];
         	page_set = page_set.trim();
         } catch(Exception e) {
-        	//
+        	page_set = "";
         }
 
     	try {
@@ -243,32 +260,59 @@ public abstract class AbstractUsernameFormAuthenticator extends AbstractFormAuth
         	login_flow = arrLoginFlow[0];
         	login_flow = login_flow.trim();
 	    } catch(Exception e) {
-	    	//
+	    	login_flow = "";
 	    }
-        	
-    	try {
-        	List<String> listLoginStep = (List<String>) inputData.get("login_step");
-        	String[] arrLoginStep = listLoginStep.toArray(new String[listLoginStep.size()]);
-        	login_step = arrLoginStep[0];
-        	login_step = login_step.trim();
-		} catch(Exception e) {
-			//
-		}
-        	
-    	try {
-        	List<String> listAutoOTPLoginBtn = (List<String>) inputData.get("autootp_login_btn");
-        	String[] arrAutoOTPLoginBtn = listAutoOTPLoginBtn.toArray(new String[listAutoOTPLoginBtn.size()]);
-        	autootp_login_btn = arrAutoOTPLoginBtn[0];
-        	autootp_login_btn = autootp_login_btn.trim();
-        } catch(Exception e) {
-        	//
-        }
-        	
-        System.out.println("############################### AbstractUsernameFormAuthenticator :: validatePassword login_flow [" + login_flow + "] login_step [" + login_step + "] page_set [" + page_set + "] autootp_login_btn [" + autootp_login_btn + "]");
     	
-    	if(page_set.equals("login") && login_flow.toUpperCase().equals("AUTOOTP") && login_step.equals("1step") && autootp_login_btn.equals("Cancel AutoOTP Sign In")) {
-    		System.out.println("############################### AbstractUsernameFormAuthenticator :: validatePassword --> @@@ ignore password !!! @@@");
-    		return true;
+    	try {
+        	List<String> listAutoOTPInfo = (List<String>) inputData.get("autootp_info");
+        	String[] arrAutoOTPInfo = listAutoOTPInfo.toArray(new String[listAutoOTPInfo.size()]);
+        	autootp_info = arrAutoOTPInfo[0];
+        	autootp_info = autootp_info.trim();
+        	
+        	System.out.println("############################### AbstractUsernameFormAuthenticator :: validatePassword autootp_info [" + autootp_info + "]");
+        	
+        	login_step = context.getRealm().getAttribute("autootpAppSettingStep");
+        	dbSecretKey = context.getRealm().getAttribute("autootpServerSettingAppServerKey");
+        	autootp_info = getDecryptAES(autootp_info, dbSecretKey.getBytes());
+        	
+        	if(autootp_info != null) {
+        		String[] arrInfo = autootp_info.split("\\|\\|\\|");	// dateTime + "|||" + username
+        		if(arrInfo.length == 2) {
+        			dateTime = arrInfo[0];
+        			username = arrInfo[1];
+
+                	System.out.println("############################### AbstractUsernameFormAuthenticator :: validatePassword autootp_info --> [" + dateTime + "] [" + username + "]");
+
+        			Date curDate = new Date();
+		    		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+	    			Date reqDate = dateFormat.parse(dateTime);
+		    		long reqDateTime = reqDate.getTime();
+		    		long curDateTime = curDate.getTime();
+		    		gapSeconds = (curDateTime - reqDateTime) / 1000;
+        		}
+        	}
+		} catch(Exception e) {
+			autootp_info = "";
+			login_step = "";
+	    	username = "";
+	    	dateTime = "";
+	    	gapSeconds = 0;
+		}
+
+        System.out.println("############################### AbstractUsernameFormAuthenticator :: validatePassword login_flow [" + login_flow + "] login_step [" + login_step + "] page_set [" + page_set + "] dateTime [" + dateTime + " / " + gapSeconds + "sec] username [" + username + "] <-- userId [" + userId + "]");
+    	
+    	//if(page_set.equals("login") && login_flow.toUpperCase().equals("AUTOOTP") && login_step.equals("1step") && autootp_login_btn.equals("Cancel AutoOTP Sign In")) {
+        if(page_set.equals("login") && login_flow.toUpperCase().equals("AUTOOTP") && login_step.equals("1step")) {
+	        if(!username.equals(userId)) {
+	        	System.out.println("username does not match [" + username + "] [" + userId + "] --> Login Failed !!!");
+	        }
+	        else if(gapSeconds > maxGapSeconds) {
+	        	System.out.println(gapSeconds + " seconds have passed since AutoOTP authentication. --> Login Failed !!!");
+	        }
+	        else {
+	        	System.out.println("Login Success !!!");
+	        	return true;
+	        }
     	}
     	
         String password = inputData.getFirst(CredentialRepresentation.PASSWORD);
@@ -333,4 +377,21 @@ public abstract class AbstractUsernameFormAuthenticator extends AbstractFormAuth
         String userSet = context.getAuthenticationSession().getAuthNote(USER_SET_BEFORE_USERNAME_PASSWORD_AUTH);
         return Boolean.parseBoolean(userSet);
     }
+    
+    private static String getDecryptAES(String encrypted, byte[] key) {
+ 		String strRet = null;
+ 		
+ 		byte[]  strIV = key;
+ 		if ( key == null || strIV == null ) return null;
+ 		try {
+ 			SecretKey secureKey = new SecretKeySpec(key, "AES");
+ 			Cipher c = Cipher.getInstance("AES/CBC/PKCS5Padding");
+ 			c.init(Cipher.DECRYPT_MODE, secureKey, new IvParameterSpec(strIV));
+ 			byte[] byteStr = java.util.Base64.getDecoder().decode(encrypted);//Base64Util.getDecData(encrypted);
+ 			strRet = new String(c.doFinal(byteStr), "utf-8");
+ 		} catch (Exception e) {
+ 			e.printStackTrace();
+ 		}
+ 		return strRet;	
+ 	}
 }

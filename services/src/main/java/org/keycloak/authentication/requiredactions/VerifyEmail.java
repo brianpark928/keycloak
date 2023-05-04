@@ -141,14 +141,35 @@ public class VerifyEmail implements RequiredActionProvider, RequiredActionFactor
                 authSession.getClient().getClientId(), authSession.getTabId());
         String link = builder.build(realm.getName()).toString();
         long expirationInMinutes = TimeUnit.SECONDS.toMinutes(validityInSecs);
+        
+        // AutoOTP - client.baseUrl
+        AuthenticationFlowModel flowModel = realm.getBrowserFlow();
+        String dbBrowserFlowAlias = flowModel.getAlias();
+        
+        if(dbBrowserFlowAlias == null)
+        	dbBrowserFlowAlias = "";
+        
+        if(dbBrowserFlowAlias.toUpperCase().indexOf("AUTOOTP") > -1)
+        	dbBrowserFlowAlias = "AUTOOTP";
 
+        System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ VerifyEmail :: sendVerifyEmail - dbBrowserFlowAlias [" + dbBrowserFlowAlias + "]");
+        
         try {
-            session
-              .getProvider(EmailTemplateProvider.class)
-              .setAuthenticationSession(authSession)
-              .setRealm(realm)
-              .setUser(user)
-              .sendVerifyEmail(link, expirationInMinutes);
+        	if(dbBrowserFlowAlias.equals("AUTOOTP"))
+	            session
+	              .getProvider(EmailTemplateProvider.class)
+	              .setAuthenticationSession(authSession)
+	              .setRealm(realm)
+	              .setUser(user, authSession.getClient())
+	              .sendVerifyEmail(link, expirationInMinutes);
+        	else
+	            session
+	              .getProvider(EmailTemplateProvider.class)
+	              .setAuthenticationSession(authSession)
+	              .setRealm(realm)
+	              .setUser(user)
+	              .sendVerifyEmail(link, expirationInMinutes);
+
             event.success();
         } catch (EmailException e) {
             logger.error("Failed to send verification email", e);

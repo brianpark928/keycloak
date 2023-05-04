@@ -202,6 +202,14 @@ public class OIDCLoginProtocolService {
         return new AutoOTPEndpoint(session, event);
     }
     
+    @Path("autootp_email")
+    public Object autootpEmail() {
+    	
+    	System.out.println("############################### OIDCLoginProtocolService :: autootp_email");
+    	
+        return new AutoOTPEndpoint(session, event);
+    }
+    
     @Path("autootp-policy-api")
     public Object autootpPolicyApi() {
     	
